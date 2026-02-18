@@ -63,41 +63,82 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
+// EmailJS initialization
+(function() {
+    emailjs.init('YOUR_PUBLIC_KEY'); // À remplacer par votre clé publique EmailJS
+})();
+
 // Form submission handler
 const contactForm = document.getElementById('contactForm');
 
 contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
-    // Get form data
-    const formData = new FormData(contactForm);
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Envoi en cours...';
+    submitBtn.disabled = true;
     
-    // In a real application, you would send this data to a server
-    // For now, we'll just show a success message
-    
-    // Create success message
-    const successMessage = document.createElement('div');
-    successMessage.style.cssText = `
-        background: #10b981;
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 8px;
-        text-align: center;
-        margin-top: 1rem;
-        animation: fadeInUp 0.5s ease;
-    `;
-    successMessage.textContent = 'Merci pour votre message ! Nous vous contacterons bientôt.';
-    
-    // Replace form with success message
-    contactForm.style.display = 'none';
-    contactForm.parentElement.appendChild(successMessage);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-        contactForm.reset();
-        contactForm.style.display = 'block';
-        successMessage.remove();
-    }, 3000);
+    // Envoyer l'email via EmailJS à info@maxiavenue.com
+    emailjs.sendForm(
+        'YOUR_SERVICE_ID',  // À remplacer par votre Service ID
+        'YOUR_TEMPLATE_ID', // À remplacer par votre Template ID
+        contactForm
+    ).then(
+        function(response) {
+            console.log('Email envoyé avec succès!', response.status, response.text);
+            
+            // Create success message
+            const successMessage = document.createElement('div');
+            successMessage.style.cssText = `
+                background: #10b981;
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                text-align: center;
+                margin-top: 1rem;
+                animation: fadeInUp 0.5s ease;
+            `;
+            successMessage.textContent = 'Merci pour votre message ! Nous vous contacterons bientôt.';
+            
+            // Replace form with success message
+            contactForm.style.display = 'none';
+            contactForm.parentElement.appendChild(successMessage);
+            
+            // Reset form after 3 seconds
+            setTimeout(() => {
+                contactForm.reset();
+                contactForm.style.display = 'block';
+                successMessage.remove();
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        },
+        function(error) {
+            console.error('Erreur lors de l\'envoi:', error);
+            
+            // Create error message
+            const errorMessage = document.createElement('div');
+            errorMessage.style.cssText = `
+                background: #ef4444;
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                text-align: center;
+                margin-top: 1rem;
+                animation: fadeInUp 0.5s ease;
+            `;
+            errorMessage.textContent = 'Une erreur s\'est produite. Veuillez réessayer.';
+            
+            contactForm.parentElement.appendChild(errorMessage);
+            
+            setTimeout(() => {
+                errorMessage.remove();
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        }
+    );
 });
 
 // Intersection Observer for fade-in animations
