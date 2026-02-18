@@ -63,15 +63,10 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
-// EmailJS initialization
-(function() {
-    emailjs.init('YOUR_PUBLIC_KEY'); // À remplacer par votre clé publique EmailJS
-})();
-
-// Form submission handler
+// Form submission handler with PHP backend
 const contactForm = document.getElementById('contactForm');
 
-contactForm.addEventListener('submit', (e) => {
+contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const submitBtn = contactForm.querySelector('button[type="submit"]');
@@ -79,16 +74,20 @@ contactForm.addEventListener('submit', (e) => {
     submitBtn.textContent = 'Envoi en cours...';
     submitBtn.disabled = true;
     
-    // Envoyer l'email via EmailJS à info@maxiavenue.com
-    emailjs.sendForm(
-        'YOUR_SERVICE_ID',  // À remplacer par votre Service ID
-        'YOUR_TEMPLATE_ID', // À remplacer par votre Template ID
-        contactForm
-    ).then(
-        function(response) {
-            console.log('Email envoyé avec succès!', response.status, response.text);
-            
-            // Create success message
+    // Préparer les données du formulaire
+    const formData = new FormData(contactForm);
+    
+    try {
+        // Envoyer les données au script PHP
+        const response = await fetch('contact.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Succès - afficher le message de confirmation
             const successMessage = document.createElement('div');
             successMessage.style.cssText = `
                 background: #10b981;
@@ -99,13 +98,13 @@ contactForm.addEventListener('submit', (e) => {
                 margin-top: 1rem;
                 animation: fadeInUp 0.5s ease;
             `;
-            successMessage.textContent = 'Merci pour votre message ! Nous vous contacterons bientôt.';
+            successMessage.textContent = result.message || 'Merci pour votre message ! Nous vous contacterons bientôt.';
             
-            // Replace form with success message
+            // Remplacer le formulaire par le message de succès
             contactForm.style.display = 'none';
             contactForm.parentElement.appendChild(successMessage);
             
-            // Reset form after 3 seconds
+            // Réinitialiser après 3 secondes
             setTimeout(() => {
                 contactForm.reset();
                 contactForm.style.display = 'block';
@@ -113,32 +112,34 @@ contactForm.addEventListener('submit', (e) => {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
             }, 3000);
-        },
-        function(error) {
-            console.error('Erreur lors de l\'envoi:', error);
-            
-            // Create error message
-            const errorMessage = document.createElement('div');
-            errorMessage.style.cssText = `
-                background: #ef4444;
-                color: white;
-                padding: 1rem 2rem;
-                border-radius: 8px;
-                text-align: center;
-                margin-top: 1rem;
-                animation: fadeInUp 0.5s ease;
-            `;
-            errorMessage.textContent = 'Une erreur s\'est produite. Veuillez réessayer.';
-            
-            contactForm.parentElement.appendChild(errorMessage);
-            
-            setTimeout(() => {
-                errorMessage.remove();
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }, 3000);
+        } else {
+            // Erreur - afficher le message d'erreur
+            throw new Error(result.message || 'Une erreur s\'est produite');
         }
-    );
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi:', error);
+        
+        // Créer le message d'erreur
+        const errorMessage = document.createElement('div');
+        errorMessage.style.cssText = `
+            background: #ef4444;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1rem;
+            animation: fadeInUp 0.5s ease;
+        `;
+        errorMessage.textContent = error.message || 'Une erreur s\'est produite. Veuillez réessayer.';
+        
+        contactForm.parentElement.appendChild(errorMessage);
+        
+        setTimeout(() => {
+            errorMessage.remove();
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+    }
 });
 
 // Intersection Observer for fade-in animations

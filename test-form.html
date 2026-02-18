@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Formulaire EPHI 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Formulaire EPHI 2026</h1>
+        <p class="subtitle">Testez l'envoi d'email à info@maxiavenue.com</p>
+        
+        <div class="info">
+            <strong>ℹ️ Information :</strong> Ce formulaire envoie un email de test à <strong>info@maxiavenue.com</strong>
+        </div>
+        
+        <form id="testForm">
+            <div class="form-group">
+                <label for="company_name">Nom de l'entreprise *</label>
+                <input type="text" id="company_name" name="company_name" value="Entreprise Test" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_name">Nom et Prénom *</label>
+                <input type="text" id="user_name" name="user_name" value="Jean Dupont" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_email">Email *</label>
+                <input type="email" id="user_email" name="user_email" value="test@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Téléphone *</label>
+                <input type="tel" id="phone" name="phone" value="06 12 34 56 78" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" required>Ceci est un message de test pour vérifier que le formulaire de contact fonctionne correctement et que les emails sont bien envoyés à info@maxiavenue.com.</textarea>
+            </div>
+            
+            <button type="submit" id="submitBtn">Envoyer le Test</button>
+        </form>
+        
+        <div id="responseMessage" class="message"></div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('testForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const responseMessage = document.getElementById('responseMessage');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Désactiver le bouton
+            submitBtn.textContent = 'Envoi en cours...';
+            submitBtn.disabled = true;
+            
+            // Cacher les messages précédents
+            responseMessage.classList.remove('show', 'success', 'error');
+            
+            try {
+                const formData = new FormData(form);
+                
+                const response = await fetch('contact.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                // Afficher le résultat
+                responseMessage.textContent = result.message;
+                responseMessage.classList.add('show', result.success ? 'success' : 'error');
+                
+                if (result.success) {
+                    // Optionnel : réinitialiser le formulaire
+                    // form.reset();
+                    console.log('✅ Email envoyé avec succès!');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                responseMessage.textContent = 'Erreur de connexion au serveur : ' + error.message;
+                responseMessage.classList.add('show', 'error');
+            } finally {
+                // Réactiver le bouton
+                submitBtn.textContent = 'Envoyer le Test';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,8 +1,72 @@
 # Configuration du Service d'Email - EPHI 2026
 
-Le formulaire de contact est maintenant configuré pour envoyer les emails à **info@maxiavenue.com**.
+Le formulaire de contact est maintenant configuré pour envoyer les emails à **info@maxiavenue.com** via PHP.
 
-## Étapes de Configuration avec EmailJS
+## ✅ Configuration PHP (Méthode actuelle - Recommandée)
+
+Le site utilise maintenant un script PHP (`contact.php`) pour envoyer les emails directement.
+
+### Fonctionnalités
+
+- ✉️ Envoi automatique à **info@maxiavenue.com**
+- ✅ Email de confirmation automatique à l'utilisateur
+- 🎨 Emails en HTML avec mise en forme professionnelle
+- 🔒 Validation des données côté serveur
+- 📱 Responsive et compatible tous navigateurs
+
+### Déploiement
+
+1. **Hébergement requis**: Un serveur web avec PHP (Apache, Nginx, etc.)
+   - Hébergement mutualisé (OVH, o2switch, Ionos, etc.)
+   - Serveur VPS
+   - Hébergement cloud (AWS, DigitalOcean, etc.)
+
+2. **Uploadez tous les fichiers** sur votre serveur via FTP/SFTP :
+   ```
+   index.html
+   style.css
+   script.js
+   contact.php
+   images/ (dossier complet)
+   ```
+
+3. **Vérifiez la configuration PHP** :
+   - PHP 7.0 ou supérieur
+   - La fonction `mail()` doit être activée
+   - Vérifiez avec votre hébergeur si besoin
+
+### Test en local avec XAMPP / MAMP / WAMP
+
+Pour tester localement :
+
+1. **Installez XAMPP** (Windows/Linux) ou **MAMP** (Mac)
+2. **Copiez les fichiers** dans le dossier `htdocs` (XAMPP) ou `www` (MAMP)
+3. **Démarrez Apache**
+4. **Accédez** à `http://localhost/ephi/index.html`
+
+**Note**: En local, les emails ne seront pas réellement envoyés sans configuration SMTP.
+
+### Configuration SMTP (Optionnel - Pour production)
+
+Pour un envoi d'emails plus fiable, utilisez PHPMailer avec SMTP :
+
+1. Téléchargez PHPMailer : `composer require phpmailer/phpmailer`
+
+2. Modifiez `contact.php` pour utiliser PHPMailer avec vos identifiants SMTP
+
+### Personnalisation
+
+Dans `contact.php`, vous pouvez modifier :
+- **Ligne 47** : L'adresse email de destination (`$to`)
+- **Ligne 50** : Le sujet de l'email
+- **Ligne 54-120** : Le template HTML de l'email
+- **Ligne 150-200** : L'email de confirmation automatique
+
+---
+
+## 📋 Ancienne méthode - EmailJS (Non utilisée)
+
+### Étapes de Configuration avec EmailJS
 
 ### 1. Créer un compte EmailJS (Gratuit)
 
