@@ -1,4 +1,8 @@
 <?php
+// Désactiver l'affichage des erreurs pour éviter de polluer la réponse JSON
+error_reporting(0);
+ini_set('display_errors', 0);
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -271,11 +275,12 @@ if ($mail_sent) {
         'success' => true, 
         'message' => 'Votre inscription a été enregistrée avec succès ! Un email de confirmation vous a été envoyé.'
     ]);
+    exit;
 } else {
     http_response_code(500);
     echo json_encode([
         'success' => false, 
         'message' => 'Une erreur est survenue lors de l\'envoi de votre inscription. Veuillez réessayer.'
     ]);
+    exit;
 }
-?>

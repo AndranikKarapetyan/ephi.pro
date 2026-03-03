@@ -290,7 +290,23 @@ registrationForm.addEventListener('submit', async (e) => {
             body: formData
         });
         
-        const result = await response.json();
+        // Vérifier si la réponse est OK
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        // Obtenir le texte de la réponse
+        const responseText = await response.text();
+        
+        // Vérifier si c'est du JSON valide
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Erreur de parsing JSON:', parseError);
+            console.error('Réponse reçue:', responseText);
+            throw new Error('Le serveur n\'a pas renvoyé une réponse valide. Veuillez vérifier que PHP est correctement configuré.');
+        }
         
         if (result.success) {
             // Succès - afficher le message de confirmation
