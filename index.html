@@ -390,7 +390,14 @@
                 <input type="hidden" name="event_location" id="event_location">
                 
                 <div class="form-group">
-                    <input type="text" name="company_name" placeholder="Nom de l'entreprise *" required>
+                    <select name="organization_type" title="Type d'organisation" required>
+                        <option value="">Type d'organisation *</option>
+                        <option value="commune">Commune</option>
+                        <option value="societe">Société</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="company_name" placeholder="Nom de l'entreprise / Commune *" required>
                 </div>
                 <div class="form-group">
                     <input type="text" name="user_name" placeholder="Nom et Prénom *" required>
@@ -408,6 +415,28 @@
                         <option value="visiteur">Visiteur</option>
                         <option value="partenaire">Partenaire</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nombre de personnes accompagnantes</label>
+                    <select name="companions" title="Nombre d'accompagnants">
+                        <option value="0">Aucune</option>
+                        <option value="1">1 personne</option>
+                        <option value="2">2 personnes</option>
+                        <option value="3">3 personnes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Déjeuner sur place</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="lunch" value="oui" required>
+                            <span>Oui</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="lunch" value="non" required>
+                            <span>Non</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="form-group">
                     <textarea name="message" placeholder="Message ou besoins spécifiques (optionnel)" rows="4"></textarea>

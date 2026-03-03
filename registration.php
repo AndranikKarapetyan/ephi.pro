@@ -18,11 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Récupérer et valider les données du formulaire
 $event_date = isset($_POST['event_date']) ? trim($_POST['event_date']) : '';
 $event_location = isset($_POST['event_location']) ? trim($_POST['event_location']) : '';
+$organization_type = isset($_POST['organization_type']) ? trim($_POST['organization_type']) : '';
 $company_name = isset($_POST['company_name']) ? trim($_POST['company_name']) : '';
 $user_name = isset($_POST['user_name']) ? trim($_POST['user_name']) : '';
 $user_email = isset($_POST['user_email']) ? trim($_POST['user_email']) : '';
 $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
 $participant_type = isset($_POST['participant_type']) ? trim($_POST['participant_type']) : '';
+$companions = isset($_POST['companions']) ? trim($_POST['companions']) : '0';
+$lunch = isset($_POST['lunch']) ? trim($_POST['lunch']) : '';
 $message = isset($_POST['message']) ? trim($_POST['message']) : '';
 
 // Validation des champs obligatoires
@@ -36,8 +39,12 @@ if (empty($event_location)) {
     $errors[] = 'Le lieu de l\'événement est requis';
 }
 
+if (empty($organization_type)) {
+    $errors[] = 'Le type d\'organisation est requis';
+}
+
 if (empty($company_name)) {
-    $errors[] = 'Le nom de l\'entreprise est requis';
+    $errors[] = 'Le nom de l\'entreprise/commune est requis';
 }
 
 if (empty($user_name)) {
@@ -54,6 +61,10 @@ if (empty($phone)) {
 
 if (empty($participant_type)) {
     $errors[] = 'Le type de participant est requis';
+}
+
+if (empty($lunch)) {
+    $errors[] = 'Veuillez indiquer si vous déjeunez sur place';
 }
 
 // Si des erreurs existent, les retourner
@@ -139,7 +150,12 @@ $email_body = "
             </div>
             
             <div class='field'>
-                <div class='field-label'>Entreprise:</div>
+                <div class='field-label'>Type d'organisation:</div>
+                <div class='field-value'>" . ucfirst($organization_type) . "</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Entreprise/Commune:</div>
                 <div class='field-value'>$company_name</div>
             </div>
             
@@ -161,6 +177,16 @@ $email_body = "
             <div class='field'>
                 <div class='field-label'>Type de participant:</div>
                 <div class='field-value'>" . ucfirst($participant_type) . "</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Nombre d'accompagnants:</div>
+                <div class='field-value'>$companions personne(s)</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Déjeuner sur place:</div>
+                <div class='field-value'>" . ucfirst($lunch) . "</div>
             </div>";
 
 if (!empty($message)) {
@@ -245,10 +271,13 @@ if ($mail_sent) {
             
             <p><strong>Vos informations :</strong></p>
             <ul>
-                <li><strong>Entreprise :</strong> $company_name</li>
+                <li><strong>Organisation :</strong> " . ucfirst($organization_type) . "</li>
+                <li><strong>Entreprise/Commune :</strong> $company_name</li>
                 <li><strong>Type :</strong> " . ucfirst($participant_type) . "</li>
                 <li><strong>Email :</strong> $user_email</li>
                 <li><strong>Téléphone :</strong> $phone</li>
+                <li><strong>Accompagnants :</strong> $companions personne(s)</li>
+                <li><strong>Déjeuner :</strong> " . ucfirst($lunch) . "</li>
             </ul>
             
             <p>Vous recevrez prochainement plus d'informations concernant le déroulement de l'événement et les modalités pratiques.</p>
