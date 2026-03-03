@@ -211,3 +211,142 @@ window.addEventListener('scroll', () => {
 });
 
 console.log('EPHI 2026 - Site chargé avec succès! 🚀');
+
+// ===== GESTION DU MODAL D'INSCRIPTION =====
+const registrationModal = document.getElementById('registrationModal');
+const registrationForm = document.getElementById('registrationForm');
+const modalClose = document.querySelector('.modal-close');
+const registerButtons = document.querySelectorAll('.btn-register');
+
+// Ouvrir le modal lors du clic sur un bouton d'inscription
+registerButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+        const date = button.getAttribute('data-date');
+        const location = button.getAttribute('data-location');
+        
+        // Remplir les champs cachés
+        document.getElementById('event_date').value = date;
+        document.getElementById('event_location').value = location;
+        
+        // Afficher l'information de l'événement dans le modal
+        document.querySelector('.modal-event-info').textContent = `📅 ${date} - 📍 ${location}`;
+        
+        // Afficher le modal
+        registrationModal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Empêcher le scroll
+        
+        // Animation d'apparition
+        setTimeout(() => {
+            registrationModal.querySelector('.modal-content').style.transform = 'scale(1)';
+            registrationModal.querySelector('.modal-content').style.opacity = '1';
+        }, 10);
+    });
+});
+
+// Fermer le modal
+function closeModal() {
+    registrationModal.querySelector('.modal-content').style.transform = 'scale(0.7)';
+    registrationModal.querySelector('.modal-content').style.opacity = '0';
+    setTimeout(() => {
+        registrationModal.style.display = 'none';
+        document.body.style.overflow = ''; // Réactiver le scroll
+        registrationForm.reset();
+    }, 300);
+}
+
+// Fermer avec le bouton X
+modalClose.addEventListener('click', closeModal);
+
+// Fermer en cliquant en dehors du modal
+registrationModal.addEventListener('click', (e) => {
+    if (e.target === registrationModal) {
+        closeModal();
+    }
+});
+
+// Fermer avec la touche Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && registrationModal.style.display === 'block') {
+        closeModal();
+    }
+});
+
+// Gérer la soumission du formulaire d'inscription
+registrationForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = registrationForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Inscription en cours...';
+    submitBtn.disabled = true;
+    
+    // Préparer les données du formulaire
+    const formData = new FormData(registrationForm);
+    
+    try {
+        // Envoyer les données au script PHP
+        const response = await fetch('registration.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Succès - afficher le message de confirmation
+            const successMessage = document.createElement('div');
+            successMessage.style.cssText = `
+                background: #10b981;
+                color: white;
+                padding: 1.5rem 2rem;
+                border-radius: 8px;
+                text-align: center;
+                margin-top: 1rem;
+                animation: fadeInUp 0.5s ease;
+            `;
+            successMessage.innerHTML = `
+                <h3 style="margin: 0 0 10px 0;">✅ Inscription réussie !</h3>
+                <p style="margin: 0;">${result.message}</p>
+            `;
+            
+            // Masquer le formulaire et afficher le message
+            registrationForm.style.display = 'none';
+            registrationForm.parentElement.appendChild(successMessage);
+            
+            // Fermer le modal après 3 secondes
+            setTimeout(() => {
+                closeModal();
+                registrationForm.style.display = 'block';
+                successMessage.remove();
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        } else {
+            // Erreur - afficher le message d'erreur
+            throw new Error(result.message || 'Une erreur s\'est produite');
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'inscription:', error);
+        
+        // Créer le message d'erreur
+        const errorMessage = document.createElement('div');
+        errorMessage.style.cssText = `
+            background: #ef4444;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1rem;
+            animation: fadeInUp 0.5s ease;
+        `;
+        errorMessage.textContent = error.message || 'Une erreur s\'est produite. Veuillez réessayer.';
+        
+        registrationForm.parentElement.appendChild(errorMessage);
+        
+        setTimeout(() => {
+            errorMessage.remove();
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+    }
+});

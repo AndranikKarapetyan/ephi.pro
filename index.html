@@ -259,51 +259,61 @@
                     <div class="date">16 avril</div>
                     <div class="location">Saint Jean De Luz (64)</div>
                     <div class="organizer">Franck Boucher</div>
+                    <button class="btn-register" data-date="16 avril 2026" data-location="Saint Jean De Luz (64)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">27 mai</div>
                     <div class="location">La Grande Motte (34)</div>
                     <div class="organizer">AROS (hors EPHI)</div>
+                    <button class="btn-register" data-date="27 mai 2026" data-location="La Grande Motte (34)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">3 juin</div>
                     <div class="location">IDF nord (91)</div>
                     <div class="organizer">Desmarez</div>
+                    <button class="btn-register" data-date="3 juin 2026" data-location="IDF nord (91)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">4 juin</div>
                     <div class="location">IDF sud (95)</div>
                     <div class="organizer">MaxiAvenue</div>
+                    <button class="btn-register" data-date="4 juin 2026" data-location="IDF sud (95)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">25 juin</div>
                     <div class="location">Lens - Stade Bollaert-Delelis (62)</div>
                     <div class="organizer">GK</div>
+                    <button class="btn-register" data-date="25 juin 2026" data-location="Lens - Stade Bollaert-Delelis (62)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">8 septembre</div>
                     <div class="location">Lyon (69)</div>
                     <div class="organizer">Ypok</div>
+                    <button class="btn-register" data-date="8 septembre 2026" data-location="Lyon (69)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">10 septembre</div>
                     <div class="location">Aix-en-Provence (13)</div>
                     <div class="organizer">Alcolock</div>
+                    <button class="btn-register" data-date="10 septembre 2026" data-location="Aix-en-Provence (13)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">15 octobre</div>
                     <div class="location">Metz (57)</div>
                     <div class="organizer">GK & Maxi</div>
+                    <button class="btn-register" data-date="15 octobre 2026" data-location="Metz (57)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">19 novembre</div>
                     <div class="location">Toulouse (31)</div>
                     <div class="organizer">MaxiAvenue</div>
+                    <button class="btn-register" data-date="19 novembre 2026" data-location="Toulouse (31)">S'inscrire</button>
                 </div>
                 <div class="calendar-item">
                     <div class="date">3 décembre</div>
                     <div class="location">Saint-Maximin (60)</div>
                     <div class="organizer">GK</div>
+                    <button class="btn-register" data-date="3 décembre 2026" data-location="Saint-Maximin (60)">S'inscrire</button>
                 </div>
             </div>
         </div>
@@ -368,6 +378,44 @@
             </div>
         </div>
     </footer>
+
+    <!-- Modal d'inscription -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Inscription au Salon</h2>
+            <p class="modal-event-info"></p>
+            <form class="registration-form" id="registrationForm">
+                <input type="hidden" name="event_date" id="event_date">
+                <input type="hidden" name="event_location" id="event_location">
+                
+                <div class="form-group">
+                    <input type="text" name="company_name" placeholder="Nom de l'entreprise *" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="user_name" placeholder="Nom et Prénom *" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" name="user_email" placeholder="Email *" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" name="phone" placeholder="Téléphone *" required>
+                </div>
+                <div class="form-group">
+                    <select name="participant_type" title="Type de participant" required>
+                        <option value="">Type de participant *</option>
+                        <option value="exposant">Exposant</option>
+                        <option value="visiteur">Visiteur</option>
+                        <option value="partenaire">Partenaire</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <textarea name="message" placeholder="Message ou besoins spécifiques (optionnel)" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirmer l'inscription</button>
+            </form>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

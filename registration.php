@@ -1,0 +1,281 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Vérifier que c'est une requête POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
+    exit;
+}
+
+// Récupérer et valider les données du formulaire
+$event_date = isset($_POST['event_date']) ? trim($_POST['event_date']) : '';
+$event_location = isset($_POST['event_location']) ? trim($_POST['event_location']) : '';
+$company_name = isset($_POST['company_name']) ? trim($_POST['company_name']) : '';
+$user_name = isset($_POST['user_name']) ? trim($_POST['user_name']) : '';
+$user_email = isset($_POST['user_email']) ? trim($_POST['user_email']) : '';
+$phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+$participant_type = isset($_POST['participant_type']) ? trim($_POST['participant_type']) : '';
+$message = isset($_POST['message']) ? trim($_POST['message']) : '';
+
+// Validation des champs obligatoires
+$errors = [];
+
+if (empty($event_date)) {
+    $errors[] = 'La date de l\'événement est requise';
+}
+
+if (empty($event_location)) {
+    $errors[] = 'Le lieu de l\'événement est requis';
+}
+
+if (empty($company_name)) {
+    $errors[] = 'Le nom de l\'entreprise est requis';
+}
+
+if (empty($user_name)) {
+    $errors[] = 'Le nom et prénom sont requis';
+}
+
+if (empty($user_email) || !filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = 'Une adresse email valide est requise';
+}
+
+if (empty($phone)) {
+    $errors[] = 'Le numéro de téléphone est requis';
+}
+
+if (empty($participant_type)) {
+    $errors[] = 'Le type de participant est requis';
+}
+
+// Si des erreurs existent, les retourner
+if (!empty($errors)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
+    exit;
+}
+
+// Adresse email de destination
+$to = 'info@maxiavenue.com';
+
+// Sujet de l'email
+$subject = 'Nouvelle inscription EPHI 2026 - ' . $event_date . ' - ' . $company_name;
+
+// Corps de l'email en HTML
+$email_body = "
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .field {
+            margin-bottom: 15px;
+        }
+        .field-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .field-value {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-left: 3px solid #667eea;
+            margin-top: 5px;
+        }
+        .event-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .event-info h3 {
+            margin: 0 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>📅 Nouvelle Inscription EPHI 2026</h2>
+        </div>
+        <div class='content'>
+            <div class='event-info'>
+                <h3>Événement</h3>
+                <p style='margin: 5px 0; font-size: 18px;'><strong>$event_date</strong></p>
+                <p style='margin: 5px 0; font-size: 16px;'>$event_location</p>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Entreprise:</div>
+                <div class='field-value'>$company_name</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Nom et Prénom:</div>
+                <div class='field-value'>$user_name</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Email:</div>
+                <div class='field-value'>$user_email</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Téléphone:</div>
+                <div class='field-value'>$phone</div>
+            </div>
+            
+            <div class='field'>
+                <div class='field-label'>Type de participant:</div>
+                <div class='field-value'>" . ucfirst($participant_type) . "</div>
+            </div>";
+
+if (!empty($message)) {
+    $email_body .= "
+            <div class='field'>
+                <div class='field-label'>Message:</div>
+                <div class='field-value'>$message</div>
+            </div>";
+}
+
+$email_body .= "
+        </div>
+    </div>
+</body>
+</html>
+";
+
+// En-têtes de l'email
+$headers = "MIME-Version: 1.0" . "\r\n";
+$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+$headers .= "From: EPHI 2026 <noreply@ephi.pro>" . "\r\n";
+$headers .= "Reply-To: $user_email" . "\r\n";
+
+// Envoyer l'email
+$mail_sent = mail($to, $subject, $email_body, $headers);
+
+if ($mail_sent) {
+    // Email de confirmation au participant
+    $confirmation_subject = "Confirmation d'inscription - EPHI 2026 - $event_date";
+    $confirmation_body = "
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .event-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>✅ Inscription Confirmée !</h2>
+        </div>
+        <div class='content'>
+            <p>Bonjour $user_name,</p>
+            <p>Nous avons bien reçu votre inscription pour le salon EPHI 2026.</p>
+            
+            <div class='event-box'>
+                <h3 style='margin: 0 0 10px 0;'>📅 $event_date</h3>
+                <p style='margin: 5px 0; font-size: 18px;'>📍 $event_location</p>
+            </div>
+            
+            <p><strong>Vos informations :</strong></p>
+            <ul>
+                <li><strong>Entreprise :</strong> $company_name</li>
+                <li><strong>Type :</strong> " . ucfirst($participant_type) . "</li>
+                <li><strong>Email :</strong> $user_email</li>
+                <li><strong>Téléphone :</strong> $phone</li>
+            </ul>
+            
+            <p>Vous recevrez prochainement plus d'informations concernant le déroulement de l'événement et les modalités pratiques.</p>
+            
+            <p>À très bientôt !</p>
+            
+            <p style='margin-top: 30px; color: #666; font-size: 14px;'>
+                L'équipe EPHI 2026<br>
+                Email: info@ephi.pro
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+    ";
+    
+    $confirmation_headers = "MIME-Version: 1.0" . "\r\n";
+    $confirmation_headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    $confirmation_headers .= "From: EPHI 2026 <noreply@ephi.pro>" . "\r\n";
+    
+    mail($user_email, $confirmation_subject, $confirmation_body, $confirmation_headers);
+    
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Votre inscription a été enregistrée avec succès ! Un email de confirmation vous a été envoyé.'
+    ]);
+} else {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Une erreur est survenue lors de l\'envoi de votre inscription. Veuillez réessayer.'
+    ]);
+}
+?>
