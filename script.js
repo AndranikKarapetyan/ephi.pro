@@ -67,78 +67,13 @@ window.addEventListener('scroll', () => {
 const contactForm = document.getElementById('contactForm');
 
 contactForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
+    // Pour Netlify Forms, on laisse la soumission native se faire
+    // Le formulaire redirigera automatiquement vers la page de remerciement
     const submitBtn = contactForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Envoi en cours...';
     submitBtn.disabled = true;
     
-    // Préparer les données du formulaire pour Netlify Forms
-    const formData = new FormData(contactForm);
-    
-    try {
-        // Envoyer les données à Netlify Forms
-        const response = await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(formData).toString()
-        });
-        
-        if (!response.ok) {
-            throw new Error('Une erreur s\'est produite lors de l\'envoi');
-        }
-        
-        // Succès - afficher le message de confirmation
-        const successMessage = document.createElement('div');
-        successMessage.style.cssText = `
-            background: #10b981;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 1rem;
-            animation: fadeInUp 0.5s ease;
-        `;
-        successMessage.textContent = 'Merci pour votre message ! Nous vous contacterons bientôt.';
-        
-        // Remplacer le formulaire par le message de succès
-        contactForm.style.display = 'none';
-        contactForm.parentElement.appendChild(successMessage);
-        
-        // Réinitialiser après 3 secondes
-        setTimeout(() => {
-            contactForm.reset();
-            contactForm.style.display = 'block';
-            successMessage.remove();
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 3000);
-        
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi:', error);
-        
-        // Créer le message d'erreur
-        const errorMessage = document.createElement('div');
-        errorMessage.style.cssText = `
-            background: #ef4444;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 1rem;
-            animation: fadeInUp 0.5s ease;
-        `;
-        errorMessage.textContent = error.message || 'Une erreur s\'est produite. Veuillez réessayer.';
-        
-        contactForm.parentElement.appendChild(errorMessage);
-        
-        setTimeout(() => {
-            errorMessage.remove();
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 3000);
-    }
+    // Pas de preventDefault() - laisse Netlify gérer la soumission naturellement
 });
 
 // Intersection Observer for fade-in animations
@@ -271,81 +206,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Gérer la soumission du formulaire d'inscription
+// Gérer la soumission du formulaire d'inscription
 registrationForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
+    // Pour Netlify Forms, on laisse la soumission native se faire
+    // Le formulaire redirigera automatiquement vers la page de remerciement
     const submitBtn = registrationForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Inscription en cours...';
     submitBtn.disabled = true;
     
-    // Préparer les données du formulaire pour Netlify Forms
-    const formData = new FormData(registrationForm);
-    
-    try {
-        // Envoyer les données à Netlify Forms
-        const response = await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(formData).toString()
-        });
-        
-        // Vérifier si la réponse est OK
-        if (!response.ok) {
-            throw new Error(`Erreur d'envoi: ${response.status}`);
-        }
-        
-        // Succès - afficher le message de confirmation
-        const successMessage = document.createElement('div');
-        successMessage.style.cssText = `
-            background: #10b981;
-            color: white;
-            padding: 1.5rem 2rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 1rem;
-            animation: fadeInUp 0.5s ease;
-        `;
-        successMessage.innerHTML = `
-            <h3 style="margin: 0 0 10px 0;">✅ Inscription réussie !</h3>
-            <p style="margin: 0;">Votre inscription a été enregistrée avec succès ! Vous recevrez une confirmation par email.</p>
-        `;
-        
-        // Masquer le formulaire et afficher le message
-        registrationForm.style.display = 'none';
-        registrationForm.parentElement.appendChild(successMessage);
-        
-        // Fermer le modal après 3 secondes
-        setTimeout(() => {
-            closeModal();
-            registrationForm.style.display = 'block';
-            successMessage.remove();
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 3000);
-        
-    } catch (error) {
-        console.error('Erreur lors de l\'inscription:', error);
-        
-        // Créer le message d'erreur
-        const errorMessage = document.createElement('div');
-        errorMessage.style.cssText = `
-            background: #ef4444;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 1rem;
-            animation: fadeInUp 0.5s ease;
-        `;
-        errorMessage.textContent = error.message || 'Une erreur s\'est produite. Veuillez réessayer.';
-        
-        registrationForm.parentElement.appendChild(errorMessage);
-        
-        setTimeout(() => {
-            errorMessage.remove();
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 3000);
-    }
+    // Pas de preventDefault() - laisse Netlify gérer la soumission naturellement
 });
