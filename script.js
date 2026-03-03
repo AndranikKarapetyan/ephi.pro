@@ -74,48 +74,47 @@ contactForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Envoi en cours...';
     submitBtn.disabled = true;
     
-    // Préparer les données du formulaire
+    // Préparer les données du formulaire pour Netlify Forms
     const formData = new FormData(contactForm);
     
     try {
-        // Envoyer les données au script PHP
-        const response = await fetch('contact.php', {
+        // Envoyer les données à Netlify Forms
+        const response = await fetch('/', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(formData).toString()
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
-            // Succès - afficher le message de confirmation
-            const successMessage = document.createElement('div');
-            successMessage.style.cssText = `
-                background: #10b981;
-                color: white;
-                padding: 1rem 2rem;
-                border-radius: 8px;
-                text-align: center;
-                margin-top: 1rem;
-                animation: fadeInUp 0.5s ease;
-            `;
-            successMessage.textContent = result.message || 'Merci pour votre message ! Nous vous contacterons bientôt.';
-            
-            // Remplacer le formulaire par le message de succès
-            contactForm.style.display = 'none';
-            contactForm.parentElement.appendChild(successMessage);
-            
-            // Réinitialiser après 3 secondes
-            setTimeout(() => {
-                contactForm.reset();
-                contactForm.style.display = 'block';
-                successMessage.remove();
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }, 3000);
-        } else {
-            // Erreur - afficher le message d'erreur
-            throw new Error(result.message || 'Une erreur s\'est produite');
+        if (!response.ok) {
+            throw new Error('Une erreur s\'est produite lors de l\'envoi');
         }
+        
+        // Succès - afficher le message de confirmation
+        const successMessage = document.createElement('div');
+        successMessage.style.cssText = `
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1rem;
+            animation: fadeInUp 0.5s ease;
+        `;
+        successMessage.textContent = 'Merci pour votre message ! Nous vous contacterons bientôt.';
+        
+        // Remplacer le formulaire par le message de succès
+        contactForm.style.display = 'none';
+        contactForm.parentElement.appendChild(successMessage);
+        
+        // Réinitialiser après 3 secondes
+        setTimeout(() => {
+            contactForm.reset();
+            contactForm.style.display = 'block';
+            successMessage.remove();
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+        
     } catch (error) {
         console.error('Erreur lors de l\'envoi:', error);
         
@@ -280,67 +279,51 @@ registrationForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Inscription en cours...';
     submitBtn.disabled = true;
     
-    // Préparer les données du formulaire
+    // Préparer les données du formulaire pour Netlify Forms
     const formData = new FormData(registrationForm);
     
     try {
-        // Envoyer les données au script PHP
-        const response = await fetch('registration.php', {
+        // Envoyer les données à Netlify Forms
+        const response = await fetch('/', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(formData).toString()
         });
         
         // Vérifier si la réponse est OK
         if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status}`);
+            throw new Error(`Erreur d'envoi: ${response.status}`);
         }
         
-        // Obtenir le texte de la réponse
-        const responseText = await response.text();
+        // Succès - afficher le message de confirmation
+        const successMessage = document.createElement('div');
+        successMessage.style.cssText = `
+            background: #10b981;
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1rem;
+            animation: fadeInUp 0.5s ease;
+        `;
+        successMessage.innerHTML = `
+            <h3 style="margin: 0 0 10px 0;">✅ Inscription réussie !</h3>
+            <p style="margin: 0;">Votre inscription a été enregistrée avec succès ! Vous recevrez une confirmation par email.</p>
+        `;
         
-        // Vérifier si c'est du JSON valide
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('Erreur de parsing JSON:', parseError);
-            console.error('Réponse reçue:', responseText);
-            throw new Error('Le serveur n\'a pas renvoyé une réponse valide. Veuillez vérifier que PHP est correctement configuré.');
-        }
+        // Masquer le formulaire et afficher le message
+        registrationForm.style.display = 'none';
+        registrationForm.parentElement.appendChild(successMessage);
         
-        if (result.success) {
-            // Succès - afficher le message de confirmation
-            const successMessage = document.createElement('div');
-            successMessage.style.cssText = `
-                background: #10b981;
-                color: white;
-                padding: 1.5rem 2rem;
-                border-radius: 8px;
-                text-align: center;
-                margin-top: 1rem;
-                animation: fadeInUp 0.5s ease;
-            `;
-            successMessage.innerHTML = `
-                <h3 style="margin: 0 0 10px 0;">✅ Inscription réussie !</h3>
-                <p style="margin: 0;">${result.message}</p>
-            `;
-            
-            // Masquer le formulaire et afficher le message
-            registrationForm.style.display = 'none';
-            registrationForm.parentElement.appendChild(successMessage);
-            
-            // Fermer le modal après 3 secondes
-            setTimeout(() => {
-                closeModal();
-                registrationForm.style.display = 'block';
-                successMessage.remove();
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }, 3000);
-        } else {
-            // Erreur - afficher le message d'erreur
-            throw new Error(result.message || 'Une erreur s\'est produite');
-        }
+        // Fermer le modal après 3 secondes
+        setTimeout(() => {
+            closeModal();
+            registrationForm.style.display = 'block';
+            successMessage.remove();
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+        
     } catch (error) {
         console.error('Erreur lors de l\'inscription:', error);
         
