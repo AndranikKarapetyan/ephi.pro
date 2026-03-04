@@ -23,7 +23,6 @@ $company_name = isset($_POST['company_name']) ? trim($_POST['company_name']) : '
 $user_name = isset($_POST['user_name']) ? trim($_POST['user_name']) : '';
 $user_email = isset($_POST['user_email']) ? trim($_POST['user_email']) : '';
 $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
-$participant_type = isset($_POST['participant_type']) ? trim($_POST['participant_type']) : '';
 $companions = isset($_POST['companions']) ? trim($_POST['companions']) : '0';
 $lunch = isset($_POST['lunch']) ? trim($_POST['lunch']) : '';
 $message = isset($_POST['message']) ? trim($_POST['message']) : '';
@@ -57,10 +56,6 @@ if (empty($user_email) || !filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
 
 if (empty($phone)) {
     $errors[] = 'Le numéro de téléphone est requis';
-}
-
-if (empty($participant_type)) {
-    $errors[] = 'Le type de participant est requis';
 }
 
 if (empty($lunch)) {
@@ -175,11 +170,6 @@ $email_body = "
             </div>
             
             <div class='field'>
-                <div class='field-label'>Type de participant:</div>
-                <div class='field-value'>" . ucfirst($participant_type) . "</div>
-            </div>
-            
-            <div class='field'>
                 <div class='field-label'>Nombre d'accompagnants:</div>
                 <div class='field-value'>$companions personne(s)</div>
             </div>
@@ -273,7 +263,6 @@ if ($mail_sent) {
             <ul>
                 <li><strong>Organisation :</strong> " . ucfirst($organization_type) . "</li>
                 <li><strong>Entreprise/Commune :</strong> $company_name</li>
-                <li><strong>Type :</strong> " . ucfirst($participant_type) . "</li>
                 <li><strong>Email :</strong> $user_email</li>
                 <li><strong>Téléphone :</strong> $phone</li>
                 <li><strong>Accompagnants :</strong> $companions personne(s)</li>
