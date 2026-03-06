@@ -152,28 +152,94 @@ const registrationForm = document.getElementById('registrationForm');
 const modalClose = document.querySelector('.modal-close');
 const registerButtons = document.querySelectorAll('.btn-register');
 
+// Mapping des identifiants de salon vers leurs informations
+const salonMap = {
+    'saintjeandeluz-16avril': { date: '16 avril 2026', location: 'Saint Jean De Luz (64)' },
+    'lagrandemotte-27mai': { date: '27 mai 2026', location: 'La Grande Motte (34)' },
+    'idfnord-3juin': { date: '3 juin 2026', location: 'IDF nord (91)' },
+    'idfsud-4juin': { date: '4 juin 2026', location: 'IDF sud (95)' },
+    'lens-25juin': { date: '25 juin 2026', location: 'Lens - Stade Bollaert-Delelis (62)' },
+    'lyon-8septembre': { date: '8 septembre 2026', location: 'Lyon (69)' },
+    'aixenprovence-10septembre': { date: '10 septembre 2026', location: 'Aix-en-Provence (13)' },
+    'metz-15octobre': { date: '15 octobre 2026', location: 'Metz (57)' },
+    'toulouse-19novembre': { date: '19 novembre 2026', location: 'Toulouse (31)' },
+    'saintmaximin-3decembre': { date: '3 décembre 2026', location: 'Saint-Maximin (60)' }
+};
+
+// Fonction pour ouvrir le modal avec les informations du salon
+function openRegistrationModal(date, location) {
+    // Remplir les champs cachés
+    document.getElementById('event_date').value = date;
+    document.getElementById('event_location').value = location;
+    
+    // Afficher l'information de l'événement dans le modal
+    document.querySelector('.modal-event-info').textContent = `📅 ${date} - 📍 ${location}`;
+    
+    // Afficher le modal
+    registrationModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    // Animation d'apparition
+    setTimeout(() => {
+        registrationModal.querySelector('.modal-content').style.transform = 'scale(1)';
+        registrationModal.querySelector('.modal-content').style.opacity = '1';
+    }, 10);
+}
+
+// Vérifier si un paramètre de salon est présent dans l'URL
+function checkUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const salonId = urlParams.get('salon');
+    
+    if (salonId && salonMap[salonId]) {
+        const salon = salonMap[salonId];
+        // Ouvrir automatiquement le modal avec le salon sélectionné
+        setTimeout(() => {
+            openRegistrationModal(salon.date, salon.location);
+        }, 500); // Petit délai pour permettre le chargement de la page
+    }
+}
+
+// Vérifier les paramètres URL au chargement de la page
+window.addEventListener('DOMContentLoaded', checkUrlParams);
+
+// ===== GESTION DES LIENS DIRECTS =====
+// Fonctionnalité de copie des liens directs
+const copyButtons = document.querySelectorAll('.btn-copy');
+
+copyButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const linkId = button.getAttribute('data-link-id');
+        const linkInput = document.getElementById(linkId);
+        
+        // Sélectionner et copier le texte
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999); // Pour mobile
+        
+        // Copier dans le presse-papiers
+        navigator.clipboard.writeText(linkInput.value).then(() => {
+            // Feedback visuel
+            const originalText = button.textContent;
+            button.textContent = '✓ Copié !';
+            button.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Erreur lors de la copie:', err);
+            alert('Impossible de copier automatiquement. Veuillez copier manuellement.');
+        });
+    });
+});
+
 // Ouvrir le modal lors du clic sur un bouton d'inscription
 registerButtons.forEach(button => {
     button.addEventListener('click', (e) => {
         const date = button.getAttribute('data-date');
         const location = button.getAttribute('data-location');
-        
-        // Remplir les champs cachés
-        document.getElementById('event_date').value = date;
-        document.getElementById('event_location').value = location;
-        
-        // Afficher l'information de l'événement dans le modal
-        document.querySelector('.modal-event-info').textContent = `📅 ${date} - 📍 ${location}`;
-        
-        // Afficher le modal
-        registrationModal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Empêcher le scroll
-        
-        // Animation d'apparition
-        setTimeout(() => {
-            registrationModal.querySelector('.modal-content').style.transform = 'scale(1)';
-            registrationModal.querySelector('.modal-content').style.opacity = '1';
-        }, 10);
+        openRegistrationModal(date, location);
     });
 });
 
