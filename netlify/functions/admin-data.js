@@ -1,8 +1,11 @@
 const { getStore } = require('@netlify/blobs');
 
 // Credentials admin (à configurer dans les variables d'environnement Netlify)
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ephi2026';
+const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'admin').trim();
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'ephi2026').trim();
+
+// Log pour debug (à retirer en production si souhaité)
+console.log('Admin config loaded - Username:', ADMIN_USERNAME, '| Password length:', ADMIN_PASSWORD.length);
 
 exports.handler = async (event, context) => {
   // Autoriser CORS
@@ -27,6 +30,7 @@ exports.handler = async (event, context) => {
     const authHeader = event.headers.authorization || event.headers.Authorization;
     
     if (!authHeader || !authHeader.startsWith('Basic ')) {
+      console.log('Missing or invalid Authorization header');
       return {
         statusCode: 401,
         headers,
@@ -39,14 +43,27 @@ exports.handler = async (event, context) => {
     const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
     const [username, password] = credentials.split(':');
 
-    // Vérifier les credentials
-    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+    console.log('Login attempt - Username:', username);
+
+    // Vérifier les credentials (trim pour éviter les espaces)
+    if (username.trim() !== ADMIN_USERNAME || password.trim() !== ADMIN_PASSWORD) {
+      console.log('Invalid credentials - Expected:', ADMIN_USERNAME, '| Received:', username.trim());
       return {
         statusCode: 401,
         headers,
-        body: JSON.stringify({ error: 'Invalid credentials' })
+        body: JSON.stringify({ 
+          error: 'Invalid credentials',
+          debug: {
+            receivedUsername: username.trim(),
+            expectedUsername: ADMIN_USERNAME,
+            usernameMatch: username.trim() === ADMIN_USERNAME,
+            passwordMatch: password.trim() === ADMIN_PASSWORD
+          }
+        })
       };
     }
+
+    console.log('Authentication successful');
 
     // Récupérer les données
     const store = getStore('registrations');
