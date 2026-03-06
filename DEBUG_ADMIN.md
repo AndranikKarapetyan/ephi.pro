@@ -1,6 +1,76 @@
 # 🔍 Dépannage - Problème de Connexion Admin
 
-## Problème : "Identifiants incorrects"
+## ✅ RÉSOLU : Authentification fonctionne
+
+D'après vos logs, l'authentification fonctionne maintenant ! 🎉
+
+Le nouveau problème est : **Netlify Blobs n'est pas configuré**
+
+## 🔧 Activer Netlify Blobs
+
+### Erreur actuelle :
+```
+MissingBlobsEnvironmentError: The environment has not been configured to use Netlify Blobs
+```
+
+### Solution : Activer Netlify Blobs dans votre site
+
+#### Méthode 1 : Via le Dashboard Netlify (Recommandé)
+
+1. Allez sur votre **Netlify Dashboard**
+2. Sélectionnez votre site `ephi.pro`
+3. Allez dans **Site Configuration** (ou **Site Settings**)
+4. Dans le menu de gauche, cherchez **Blobs** ou **Add-ons**
+5. Cliquez sur **Enable Blobs** (Activer Blobs)
+6. Plan gratuit : 100 MB inclus ✅
+
+#### Méthode 2 : Via netlify.toml (Alternative)
+
+Si l'option n'apparaît pas dans le dashboard, ajoutez dans votre `netlify.toml` :
+
+```toml
+[build]
+  publish = "."
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Activer Netlify Blobs
+[[plugins]]
+  package = "@netlify/plugin-blobs"
+```
+
+Mais normalement, Blobs devrait être disponible automatiquement si vous utilisez `@netlify/blobs` dans vos functions.
+
+#### Méthode 3 : Forcer l'activation
+
+Parfois, il faut juste **redéployer complètement** :
+
+1. Dans Netlify Dashboard : **Site Settings > Build & deploy**
+2. Cliquez sur **Clear build cache**
+3. Puis : **Deploys > Trigger deploy > Clear cache and deploy site**
+
+### Vérification
+
+Après activation, attendez le redéploiement (1-2 min) et :
+
+1. Allez sur `/admin`
+2. Connectez-vous avec vos identifiants
+3. Si ça fonctionne : vous verrez le dashboard (même vide au début)
+4. Si erreur : consultez à nouveau les logs Functions
+
+### En attendant : Les inscriptions fonctionnent quand même
+
+**Important** : Même si Blobs n'est pas activé, les inscriptions continuent de fonctionner !
+- ✅ Les emails sont envoyés
+- ✅ Les participants reçoivent leur confirmation
+- ❌ Les données ne sont juste pas sauvegardées dans le dashboard admin
+
+Une fois Blobs activé, les nouvelles inscriptions apparaîtront automatiquement.
+
+---
+
+## Problème : "Identifiants incorrects" (résolu)
 
 ### Étape 1 : Vérifier les variables d'environnement
 

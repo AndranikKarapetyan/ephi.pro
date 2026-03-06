@@ -66,8 +66,40 @@ exports.handler = async (event, context) => {
     console.log('Authentication successful');
 
     // Récupérer les données
-    const store = getStore('registrations');
-    let registrations = await store.get('all', { type: 'json' });
+    let registrations = [];
+    
+    try {
+      const store = getStore('registrations');
+      const data = await store.get('all', { type: 'json' });
+      
+      if (data) {
+        registrations = data;
+      }
+    } catch (blobError) {
+      console.error('Netlify Blobs error:', blobError.message);
+      
+      // Si Blobs n'est pas configuré, retourner un message d'erreur explicite
+      if (blobError.message.includes('MissingBlobsEnvironmentError')) {
+        return {
+          statusCode: 503,
+          headers,
+          body: JSON.stringify({
+            error: 'Netlify Blobs not configured',
+            message: 'Netlify Blobs doit être activé pour ce site. Consultez DEBUG_ADMIN.md pour les instructions.',
+            instructions: 'Allez dans Site Configuration > Environment Variables et activez Netlify Blobs',
+            registrations: [],
+            stats: {
+              total_inscriptions: 0,
+              total_participants: 0,
+              by_salon: {}
+            }
+          })
+        };
+      }
+      
+      // Autre erreur
+      throw blobError;
+    }
     
     if (!registrations) {
       registrations = [];
