@@ -22,3 +22,7 @@ node_modules/
 .env
 .env.local
 
+# Données d'inscriptions (sensible)
+data/
+data/*.json
+

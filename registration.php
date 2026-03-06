@@ -200,6 +200,53 @@ $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 $headers .= "From: EPHI 2026 <noreply@ephi.pro>" . "\r\n";
 $headers .= "Reply-To: $user_email" . "\r\n";
 
+// Sauvegarder l'inscription dans un fichier JSON
+function saveRegistration($data) {
+    $file = 'data/registrations.json';
+    $dir = dirname($file);
+    
+    // Créer le dossier data s'il n'existe pas
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    
+    // Lire les inscriptions existantes
+    $registrations = [];
+    if (file_exists($file)) {
+        $content = file_get_contents($file);
+        $registrations = json_decode($content, true) ?: [];
+    }
+    
+    // Ajouter la nouvelle inscription avec un ID unique et un timestamp
+    $data['id'] = uniqid('reg_', true);
+    $data['registered_at'] = date('Y-m-d H:i:s');
+    $data['ip_address'] = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    
+    $registrations[] = $data;
+    
+    // Sauvegarder
+    file_put_contents($file, json_encode($registrations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    
+    return true;
+}
+
+// Préparer les données d'inscription
+$registration_data = [
+    'event_date' => $event_date,
+    'event_location' => $event_location,
+    'organization_type' => $organization_type,
+    'company_name' => $company_name,
+    'user_name' => $user_name,
+    'user_email' => $user_email,
+    'phone' => $phone,
+    'companions' => $companions,
+    'lunch' => $lunch,
+    'message' => $message
+];
+
+// Sauvegarder l'inscription
+saveRegistration($registration_data);
+
 // Envoyer l'email
 $mail_sent = mail($to, $subject, $email_body, $headers);
 
