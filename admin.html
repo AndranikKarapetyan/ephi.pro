@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration EPHI - Dashboard</title>
+    <link rel="icon" type="image/png" href="images/image-001.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .login-screen, .dashboard {
+            display: none;
+        }
+        
+        .login-screen.active, .dashboard.active {
+            display: block;
+        }
+        
+        /* Login Screen */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Dashboard */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-export {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .filter-group select {
+            padding: 0.6rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+        
+        tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-commune {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-societe {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .badge-lunch-oui {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-lunch-non {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .salon-stats {
+            padding: 1.5rem;
+        }
+        
+        .salon-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .salon-item h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .salon-item-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen active">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="logo">
+                    <h1>🔐 EPHI Admin</h1>
+                    <p>Gestion des inscriptions</p>
+                </div>
+                
+                <div id="login-error" class="error" style="display: none;"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur</label>
+                        <input type="text" id="username" name="username" required autofocus>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Se connecter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <div class="header">
+            <div class="header-content">
+                <h1>📊 Dashboard - Inscriptions EPHI 2026</h1>
+                <div class="header-actions">
+                    <button onclick="exportCSV()" class="btn btn-export">📥 Exporter CSV</button>
+                    <button onclick="logout()" class="btn btn-logout">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div id="loading" class="loading">
+                <p>Chargement des données...</p>
+            </div>
+            
+            <div id="dashboard-content" style="display: none;">
+                <!-- Statistiques -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total des inscriptions</h3>
+                        <div class="stat-value" id="stat-inscriptions">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total des participants</h3>
+                        <div class="stat-value" id="stat-participants">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Nombre de salons</h3>
+                        <div class="stat-value" id="stat-salons">0</div>
+                    </div>
+                </div>
+                
+                <!-- Stats par salon -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">📍 Statistiques par Salon</h2>
+                    </div>
+                    <div class="salon-stats" id="salon-stats"></div>
+                </div>
+                
+                <!-- Liste des inscriptions -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">📋 Liste des Inscriptions</h2>
+                        <div class="filter-group">
+                            <label for="salon-filter">Filtrer par salon :</label>
+                            <select id="salon-filter" onchange="filterTable()">
+                                <option value="">Tous les salons</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date/Lieu</th>
+                                    <th>Type</th>
+                                    <th>Entreprise/Commune</th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Accomp.</th>
+                                    <th>Déjeuner</th>
+                                    <th>Inscrit le</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registrations-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let credentials = null;
+        let allRegistrations = [];
+        let currentFilter = '';
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            credentials = btoa(`${username}:${password}`);
+            
+            try {
+                const response = await fetch('/.netlify/functions/admin-data', {
+                    headers: {
+                        'Authorization': `Basic ${credentials}`
+                    }
+                });
+                
+                if (response.ok) {
+                    document.querySelector('.login-screen').classList.remove('active');
+                    document.querySelector('.dashboard').classList.add('active');
+                    loadData();
+                } else {
+                    document.getElementById('login-error').textContent = 'Identifiants incorrects';
+                    document.getElementById('login-error').style.display = 'block';
+                    credentials = null;
+                }
+            } catch (error) {
+                document.getElementById('login-error').textContent = 'Erreur de connexion';
+                document.getElementById('login-error').style.display = 'block';
+                credentials = null;
+            }
+        });
+
+        // Load data
+        async function loadData() {
+            try {
+                const response = await fetch('/.netlify/functions/admin-data', {
+                    headers: {
+                        'Authorization': `Basic ${credentials}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur de chargement');
+                }
+                
+                const data = await response.json();
+                allRegistrations = data.registrations;
+                
+                displayStats(data.stats);
+                displaySalonStats(data.stats.by_salon);
+                displayRegistrations(allRegistrations);
+                populateFilter(data.stats.by_salon);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('loading').innerHTML = '<p style="color: red;">Erreur de chargement des données</p>';
+            }
+        }
+
+        // Display stats
+        function displayStats(stats) {
+            document.getElementById('stat-inscriptions').textContent = stats.total_inscriptions;
+            document.getElementById('stat-participants').textContent = stats.total_participants;
+            document.getElementById('stat-salons').textContent = Object.keys(stats.by_salon).length;
+        }
+
+        // Display salon stats
+        function displaySalonStats(by_salon) {
+            const container = document.getElementById('salon-stats');
+            container.innerHTML = '';
+            
+            if (Object.keys(by_salon).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">Aucune inscription pour le moment</p>';
+                return;
+            }
+            
+            for (const [event, stats] of Object.entries(by_salon)) {
+                const item = document.createElement('div');
+                item.className = 'salon-item';
+                item.innerHTML = `
+                    <h4>${event}</h4>
+                    <div class="salon-item-stats">
+                        <span>👥 <strong>${stats.count}</strong> inscriptions</span>
+                        <span>🎫 <strong>${stats.participants}</strong> participants</span>
+                        <span>🏛️ <strong>${stats.communes}</strong> communes</span>
+                        <span>🏢 <strong>${stats.societes}</strong> sociétés</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        // Display registrations
+        function displayRegistrations(registrations) {
+            const tbody = document.getElementById('registrations-table');
+            tbody.innerHTML = '';
+            
+            const filtered = currentFilter 
+                ? registrations.filter(r => `${r.event_date} - ${r.event_location}` === currentFilter)
+                : registrations;
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #999;">Aucune inscription trouvée</td></tr>';
+                return;
+            }
+            
+            filtered.forEach(reg => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <strong>${reg.event_date || 'N/A'}</strong><br>
+                        <small style="color: #666;">${reg.event_location || 'N/A'}</small>
+                    </td>
+                    <td>
+                        <span class="badge badge-${reg.organization_type || 'societe'}">
+                            ${(reg.organization_type || 'N/A').charAt(0).toUpperCase() + (reg.organization_type || 'N/A').slice(1)}
+                        </span>
+                    </td>
+                    <td>${reg.company_name || 'N/A'}</td>
+                    <td>${reg.user_name || 'N/A'}</td>
+                    <td>${reg.user_email || 'N/A'}</td>
+                    <td>${reg.phone || 'N/A'}</td>
+                    <td>${reg.companions || '0'}</td>
+                    <td>
+                        <span class="badge badge-lunch-${reg.lunch || 'non'}">
+                            ${(reg.lunch || 'non').charAt(0).toUpperCase() + (reg.lunch || 'non').slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        <small>${new Date(reg.registered_at).toLocaleString('fr-FR')}</small>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Populate filter
+        function populateFilter(by_salon) {
+            const select = document.getElementById('salon-filter');
+            select.innerHTML = '<option value="">Tous les salons</option>';
+            
+            for (const event of Object.keys(by_salon)) {
+                const option = document.createElement('option');
+                option.value = event;
+                option.textContent = event;
+                select.appendChild(option);
+            }
+        }
+
+        // Filter table
+        function filterTable() {
+            currentFilter = document.getElementById('salon-filter').value;
+            displayRegistrations(allRegistrations);
+        }
+
+        // Export CSV
+        function exportCSV() {
+            const filtered = currentFilter 
+                ? allRegistrations.filter(r => `${r.event_date} - ${r.event_location}` === currentFilter)
+                : allRegistrations;
+            
+            let csv = 'ID;Date Inscription;Date Salon;Lieu Salon;Type Organisation;Entreprise/Commune;Nom Complet;Email;Téléphone;Accompagnants;Total Participants;Déjeuner;Message\n';
+            
+            filtered.forEach(reg => {
+                csv += [
+                    reg.id || '',
+                    new Date(reg.registered_at).toLocaleString('fr-FR'),
+                    reg.event_date || '',
+                    reg.event_location || '',
+                    (reg.organization_type || '').charAt(0).toUpperCase() + (reg.organization_type || '').slice(1),
+                    reg.company_name || '',
+                    reg.user_name || '',
+                    reg.user_email || '',
+                    reg.phone || '',
+                    reg.companions || '0',
+                    (1 + parseInt(reg.companions || 0)),
+                    (reg.lunch || '').charAt(0).toUpperCase() + (reg.lunch || '').slice(1),
+                    (reg.message || '').replace(/[\n\r]/g, ' ')
+                ].map(v => `"${v}"`).join(';') + '\n';
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `inscriptions_ephi_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Logout
+        function logout() {
+            credentials = null;
+            document.querySelector('.dashboard').classList.remove('active');
+            document.querySelector('.login-screen').classList.add('active');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('login-error').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

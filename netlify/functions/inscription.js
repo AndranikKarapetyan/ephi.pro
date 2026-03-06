@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { getStore } = require('@netlify/blobs');
 
 exports.handler = async (event, context) => {
   // Vérifier que c'est une requête POST
@@ -24,6 +25,34 @@ exports.handler = async (event, context) => {
         statusCode: 400,
         body: JSON.stringify({ message: 'Spam détecté' })
       };
+    }
+
+    // Sauvegarder l'inscription dans Netlify Blobs
+    try {
+      const store = getStore('registrations');
+      
+      // Récupérer les inscriptions existantes
+      let registrations = [];
+      const existingData = await store.get('all', { type: 'json' });
+      if (existingData) {
+        registrations = existingData;
+      }
+      
+      // Ajouter la nouvelle inscription
+      const registration = {
+        id: `reg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        registered_at: new Date().toISOString(),
+        ...formData,
+        ip_address: event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'unknown'
+      };
+      
+      registrations.push(registration);
+      
+      // Sauvegarder
+      await store.setJSON('all', registrations);
+    } catch (blobError) {
+      console.error('Erreur sauvegarde Netlify Blobs:', blobError);
+      // Continue même si la sauvegarde échoue
     }
 
     // Construire l'email HTML
