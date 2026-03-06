@@ -23,7 +23,21 @@ Pour chaque variable dans `.env.example` :
 
 ### 3. Variables obligatoires
 
-#### Pour l'envoi d'emails :
+#### Pour la base de données (Supabase) :
+```
+SUPABASE_URL=https://votre-projet.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+**⚠️ OBLIGATOIRE** : Consultez `SUPABASE_SETUP.md` pour créer votre projet et obtenir ces valeurs.
+
+#### Pour l'accès admin :
+```
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=votremotdepassesecurise2026
+```
+**⚠️ OBLIGATOIRE** : Nécessaire pour accéder au dashboard admin.
+
+#### Pour l'envoi d'emails (optionnel) :
 ```
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -31,12 +45,7 @@ SMTP_USER=votre-email@gmail.com
 SMTP_PASS=votre-mot-de-passe-application
 NOTIFICATION_EMAIL=info@maxiavenue.com
 ```
-
-#### Pour l'accès admin :
-```
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=votremotdepassesecurise2026
-```
+**ℹ️ Optionnel** : Si non configuré, les emails ne seront pas enviés, mais les inscriptions seront quand même sauvegardées.
 
 ### 4. Configuration Gmail (recommandé)
 

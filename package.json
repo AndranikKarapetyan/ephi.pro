@@ -4,7 +4,7 @@
   "description": "Site EPHI 2026 avec formulaires Netlify",
   "dependencies": {
     "nodemailer": "^6.9.0",
-    "@netlify/blobs": "^7.0.0"
+    "@supabase/supabase-js": "^2.39.0"
   },
   "scripts": {
     "build": "echo 'Build complete'"

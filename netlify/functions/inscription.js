@@ -1,5 +1,14 @@
 const nodemailer = require('nodemailer');
-const { getStore } = require('@netlify/blobs');
+const { createClient } = require('@supabase/supabase-js');
+
+// Initialiser Supabase (si configuré)
+let supabase = null;
+if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+  supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
+  );
+}
 
 exports.handler = async (event, context) => {
   // Vérifier que c'est une requête POST
@@ -27,32 +36,39 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Sauvegarder l'inscription dans Netlify Blobs
-    try {
-      const store = getStore('registrations');
-      
-      // Récupérer les inscriptions existantes
-      let registrations = [];
-      const existingData = await store.get('all', { type: 'json' });
-      if (existingData) {
-        registrations = existingData;
+    // Sauvegarder l'inscription dans Supabase
+    if (supabase) {
+      try {
+        const registration = {
+          event_date: formData.event_date || null,
+          event_location: formData.event_location || null,
+          organization_type: formData.organization_type || null,
+          company_name: formData.company_name || null,
+          user_name: formData.user_name || null,
+          user_email: formData.user_email || null,
+          phone: formData.phone || null,
+          companions: parseInt(formData.companions || 0),
+          lunch: formData.lunch || null,
+          message: formData.message || null,
+          ip_address: event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'unknown',
+          registered_at: new Date().toISOString()
+        };
+        
+        const { data, error } = await supabase
+          .from('registrations')
+          .insert([registration]);
+        
+        if (error) {
+          console.error('Erreur sauvegarde Supabase:', error);
+        } else {
+          console.log('Inscription sauvegardée dans Supabase');
+        }
+      } catch (supaError) {
+        console.error('Erreur Supabase:', supaError);
+        // Continue même si la sauvegarde échoue
       }
-      
-      // Ajouter la nouvelle inscription
-      const registration = {
-        id: `reg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        registered_at: new Date().toISOString(),
-        ...formData,
-        ip_address: event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'unknown'
-      };
-      
-      registrations.push(registration);
-      
-      // Sauvegarder
-      await store.setJSON('all', registrations);
-    } catch (blobError) {
-      console.error('Erreur sauvegarde Netlify Blobs:', blobError);
-      // Continue même si la sauvegarde échoue
+    } else {
+      console.log('Supabase non configuré - inscription non sauvegardée');
     }
 
     // Construire l'email HTML

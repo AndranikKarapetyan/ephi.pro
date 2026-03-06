@@ -1,8 +1,17 @@
-const { getStore } = require('@netlify/blobs');
+const { createClient } = require('@supabase/supabase-js');
 
 // Credentials admin (à configurer dans les variables d'environnement Netlify)
 const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'admin').trim();
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'ephi2026').trim();
+
+// Initialiser Supabase si les variables sont configurées
+let supabase = null;
+if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+  supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
+  );
+}
 
 // Log pour debug (à retirer en production si souhaité)
 console.log('Admin config loaded - Username:', ADMIN_USERNAME, '| Password length:', ADMIN_PASSWORD.length);
@@ -65,28 +74,34 @@ exports.handler = async (event, context) => {
 
     console.log('Authentication successful');
 
-    // Récupérer les données
+    // Récupérer les données depuis Supabase
     let registrations = [];
     
-    try {
-      const store = getStore('registrations');
-      const data = await store.get('all', { type: 'json' });
-      
-      if (data) {
-        registrations = data;
-      }
-    } catch (blobError) {
-      console.error('Netlify Blobs error:', blobError.message);
-      
-      // Si Blobs n'est pas configuré, retourner un message d'erreur explicite
-      if (blobError.message.includes('MissingBlobsEnvironmentError')) {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('registrations')
+          .select('*')
+          .order('registered_at', { ascending: false });
+        
+        if (error) {
+          console.error('Erreur Supabase:', error);
+          throw error;
+        }
+        
+        if (data) {
+          registrations = data;
+        }
+      } catch (supaError) {
+        console.error('Supabase error:', supaError.message);
+        
         return {
           statusCode: 503,
           headers,
           body: JSON.stringify({
-            error: 'Netlify Blobs not configured',
-            message: 'Netlify Blobs doit être activé pour ce site. Consultez DEBUG_ADMIN.md pour les instructions.',
-            instructions: 'Allez dans Site Configuration > Environment Variables et activez Netlify Blobs',
+            error: 'Database error',
+            message: 'Erreur lors de la récupération des données de Supabase',
+            details: supaError.message,
             registrations: [],
             stats: {
               total_inscriptions: 0,
@@ -96,19 +111,24 @@ exports.handler = async (event, context) => {
           })
         };
       }
-      
-      // Autre erreur
-      throw blobError;
-    }
-    
-    if (!registrations) {
-      registrations = [];
+    } else {
+      return {
+        statusCode: 503,
+        headers,
+        body: JSON.stringify({
+          error: 'Supabase not configured',
+          message: 'Les variables SUPABASE_URL et SUPABASE_KEY doivent être configurées dans Netlify',
+          registrations: [],
+          stats: {
+            total_inscriptions: 0,
+            total_participants: 0,
+            by_salon: {}
+          }
+        })
+      };
     }
 
-    // Trier par date (plus récent en premier)
-    registrations.sort((a, b) => {
-      return new Date(b.registered_at) - new Date(a.registered_at);
-    });
+    // Les données sont déjà triées par Supabase (order by registered_at desc)
 
     // Calculer les statistiques
     const stats = {
