@@ -538,6 +538,9 @@ section {
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
 }
 
 .btn-register:hover {

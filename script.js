@@ -237,6 +237,11 @@ copyButtons.forEach(button => {
 // Ouvrir le modal lors du clic sur un bouton d'inscription
 registerButtons.forEach(button => {
     button.addEventListener('click', (e) => {
+        // Ignorer les liens externes (comme celui de La Grande Motte)
+        if (button.tagName === 'A' && button.href) {
+            return; // Laisser le lien fonctionner normalement
+        }
+        
         const date = button.getAttribute('data-date');
         const location = button.getAttribute('data-location');
         openRegistrationModal(date, location);
