@@ -13,3 +13,27 @@
   
 [build.environment]
   NODE_VERSION = "18"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Force HTTPS
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    
+    # Content Security Policy - Autorise uniquement les sources sûres
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+    
+    # Empêche le site d'être chargé dans une iframe
+    X-Frame-Options = "DENY"
+    
+    # Empêche le sniffing MIME
+    X-Content-Type-Options = "nosniff"
+    
+    # Active la protection XSS du navigateur
+    X-XSS-Protection = "1; mode=block"
+    
+    # Contrôle les informations envoyées avec les liens
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Permissions navigator
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
