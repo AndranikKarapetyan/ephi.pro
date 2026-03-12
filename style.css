@@ -418,11 +418,17 @@ section {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .partner-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.partner-card:active {
+    transform: translateY(-5px);
 }
 
 .partner-logo {
