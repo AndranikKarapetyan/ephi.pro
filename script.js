@@ -156,8 +156,8 @@ const registerButtons = document.querySelectorAll('.btn-register');
 const salonMap = {
     'saintjeandeluz-16avril': { date: '16 avril 2026', time: '9h - 15h', location: 'Saint Jean De Luz (64)' },
     'lagrandemotte-27mai': { date: '27 mai 2026', time: '9h - 15h', location: 'La Grande Motte (34)' },
-    'idfnord-3juin': { date: '3 juin 2026', time: '9h - 15h', location: 'IDF nord (91)' },
-    'idfsud-4juin': { date: '4 juin 2026', time: '9h - 15h', location: 'IDF sud (95)' },
+    'idfsud-3juin': { date: '3 juin 2026', time: '9h - 15h', location: 'IDF sud (91)' },
+    'idfnord-4juin': { date: '4 juin 2026', time: '9h - 15h', location: 'IDF nord (95)' },
     'lens-25juin': { date: '25 juin 2026', time: '9h - 15h', location: 'Lens - Stade Bollaert-Delelis (62)' },
     'lyon-8septembre': { date: '8 septembre 2026', time: '9h - 15h', location: 'Lyon (69)' },
     'aixenprovence-10septembre': { date: '10 septembre 2026', time: '9h - 15h', location: 'Aix-en-Provence (13)' },
