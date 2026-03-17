@@ -277,31 +277,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Gérer la soumission du formulaire d'inscription
+// Gérer la soumission du formulaire d'inscription
 registrationForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
+    // Pour Netlify Forms, on laisse la soumission native se faire
+    // Le formulaire redirigera automatiquement vers la page de remerciement
     const submitBtn = registrationForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Inscription en cours...';
     submitBtn.disabled = true;
-
-    try {
-        const response = await fetch('/.netlify/functions/inscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(new FormData(registrationForm)).toString()
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            window.location.href = '/merci-inscription.html';
-        } else {
-            throw new Error(result.message || 'Erreur lors de l\'inscription');
-        }
-    } catch (error) {
-        alert('Une erreur est survenue lors de votre inscription. Veuillez réessayer ou nous contacter à info@ephi.pro.');
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    }
+    
+    // Pas de preventDefault() - laisse Netlify gérer la soumission naturellement
 });
