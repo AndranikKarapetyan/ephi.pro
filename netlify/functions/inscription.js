@@ -274,39 +274,47 @@ exports.handler = async (event, context) => {
       }
     });
 
-    // Envoyer l'email de notification à l'équipe
-    await transporter.sendMail({
-      from: '"EPHI 2026" <noreply@ephi.pro>',
-      to: process.env.NOTIFICATION_EMAIL || 'info@maxiavenue.com',
-      subject: `Nouvelle inscription EPHI 2026 - ${formData.event_date} - ${formData.company_name}`,
-      html: emailHTML
-    });
-
-    // Envoyer l'email de confirmation au participant
-    if (formData.user_email) {
+    // Envoyer les emails (non bloquant : une erreur SMTP ne fait pas échouer l'inscription)
+    try {
+      // Email de notification à l'équipe
       await transporter.sendMail({
         from: '"EPHI 2026" <noreply@ephi.pro>',
-        to: formData.user_email,
-        subject: `Confirmation d'inscription - EPHI 2026 - ${formData.event_date}`,
-        html: confirmationHTML
+        to: process.env.NOTIFICATION_EMAIL || 'info@maxiavenue.com',
+        subject: `Nouvelle inscription EPHI 2026 - ${formData.event_date} - ${formData.company_name}`,
+        html: emailHTML
       });
+
+      // Email de confirmation au participant
+      if (formData.user_email) {
+        await transporter.sendMail({
+          from: '"EPHI 2026" <noreply@ephi.pro>',
+          to: formData.user_email,
+          subject: `Confirmation d'inscription - EPHI 2026 - ${formData.event_date}`,
+          html: confirmationHTML
+        });
+      }
+    } catch (mailError) {
+      console.error('Erreur envoi email:', mailError);
+      // On continue même si l'email échoue
     }
 
-    // Rediriger vers la page de remerciement
     return {
-      statusCode: 303,
-      headers: {
-        Location: '/merci-inscription.html'
-      }
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success: true,
+        message: 'Votre inscription a été enregistrée avec succès ! Un email de confirmation vous a été envoyé.'
+      })
     };
 
   } catch (error) {
     console.error('Erreur:', error);
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        message: 'Erreur lors du traitement de l\'inscription',
-        error: error.message 
+        success: false,
+        message: 'Erreur lors du traitement de l\'inscription'
       })
     };
   }
