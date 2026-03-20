@@ -596,6 +596,19 @@ section {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
+.link-card-invitation {
+    margin: -2rem -2rem 1.5rem -2rem;
+    border-radius: 10px 10px 0 0;
+    overflow: hidden;
+}
+
+.invitation-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px 10px 0 0;
+}
+
 .link-card:hover {
     border-color: var(--primary-color);
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
