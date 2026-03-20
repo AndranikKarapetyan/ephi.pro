@@ -596,17 +596,17 @@ section {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
-.link-card-invitation {
-    margin: -2rem -2rem 1.5rem -2rem;
-    border-radius: 10px 10px 0 0;
+.modal-invitation {
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
     overflow: hidden;
 }
 
-.invitation-img {
+.modal-invitation-img {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 10px 10px 0 0;
+    border-radius: 8px;
 }
 
 .link-card:hover {

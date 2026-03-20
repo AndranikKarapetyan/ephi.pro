@@ -174,7 +174,13 @@ function openRegistrationModal(date, location, time = '9h - 15h') {
     
     // Afficher l'information de l'événement dans le modal
     document.querySelector('.modal-event-info').textContent = `📅 ${date} • ⏰ ${time} • 📍 ${location}`;
-    
+
+    // Afficher l'invitation si c'est Saint Jean de Luz
+    const invitationEl = document.getElementById('modal-invitation');
+    if (invitationEl) {
+        invitationEl.style.display = location.toLowerCase().includes('saint jean de luz') ? 'block' : 'none';
+    }
+
     // Afficher le modal
     registrationModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
