@@ -154,10 +154,10 @@ const registerButtons = document.querySelectorAll('.btn-register');
 
 // Mapping des identifiants de salon vers leurs informations
 const salonMap = {
-    'saintjeandeluz-16avril': { date: '16 avril 2026', time: '9h - 15h', location: 'Saint Jean De Luz (64)' },
+    'saintjeandeluz-16avril': { date: '16 avril 2026', time: '9h - 15h', location: 'Saint Jean De Luz (64)', invitation: 'images/Invitation%20Ephi%202026%20St%20Jean%20De%20Luz%20(1)_page-0001.jpg' },
     'lagrandemotte-27mai': { date: '27 mai 2026', time: '9h - 15h', location: 'La Grande Motte (34)' },
     'idfsud-3juin': { date: '3 juin 2026', time: '9h - 15h', location: 'IDF sud (91)' },
-    'idfnord-4juin': { date: '4 juin 2026', time: '9h - 15h', location: 'IDF nord (95)' },
+    'idfnord-4juin': { date: '4 juin 2026', time: '9h - 15h', location: 'IDF nord (95)', invitation: 'images/Invitation%20Ephi%202026%20IDF%20Nord%20Enghien%20(95)%20(6).jpg' },
     'lens-25juin': { date: '25 juin 2026', time: '9h - 15h', location: 'Lens - Stade Bollaert-Delelis (62)' },
     'lyon-8septembre': { date: '8 septembre 2026', time: '9h - 15h', location: 'Lyon (69)' },
     'aixenprovence-10septembre': { date: '10 septembre 2026', time: '9h - 15h', location: 'Aix-en-Provence (13)' },
@@ -167,7 +167,7 @@ const salonMap = {
 };
 
 // Fonction pour ouvrir le modal avec les informations du salon
-function openRegistrationModal(date, location, time = '9h - 15h') {
+function openRegistrationModal(date, location, time = '9h - 15h', invitationImage = null) {
     // Remplir les champs cachés
     document.getElementById('event_date').value = date;
     document.getElementById('event_location').value = location;
@@ -175,10 +175,15 @@ function openRegistrationModal(date, location, time = '9h - 15h') {
     // Afficher l'information de l'événement dans le modal
     document.querySelector('.modal-event-info').textContent = `📅 ${date} • ⏰ ${time} • 📍 ${location}`;
 
-    // Afficher l'invitation si c'est Saint Jean de Luz
+    // Gérer l'affichage de l'invitation
     const invitationEl = document.getElementById('modal-invitation');
-    if (invitationEl) {
-        invitationEl.style.display = location.toLowerCase().includes('saint jean de luz') ? 'block' : 'none';
+    if (invitationEl && invitationImage) {
+        const invitationImg = invitationEl.querySelector('.modal-invitation-img');
+        invitationImg.src = invitationImage;
+        invitationImg.alt = `Invitation Salon EPHI 2026 - ${location}`;
+        invitationEl.style.display = 'block';
+    } else if (invitationEl) {
+        invitationEl.style.display = 'none';
     }
 
     // Afficher le modal
@@ -250,7 +255,8 @@ registerButtons.forEach(button => {
         
         const date = button.getAttribute('data-date');
         const location = button.getAttribute('data-location');
-        openRegistrationModal(date, location);
+        const invitationImage = button.getAttribute('data-invitation');
+        openRegistrationModal(date, location, '9h - 15h', invitationImage);
     });
 });
 
