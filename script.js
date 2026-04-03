@@ -206,7 +206,7 @@ function checkUrlParams() {
         const salon = salonMap[salonId];
         // Ouvrir automatiquement le modal avec le salon sélectionné
         setTimeout(() => {
-            openRegistrationModal(salon.date, salon.location, salon.time);
+            openRegistrationModal(salon.date, salon.location, salon.time, salon.invitation);
         }, 500); // Petit délai pour permettre le chargement de la page
     }
 }
