@@ -156,7 +156,7 @@ const registerButtons = document.querySelectorAll('.btn-register');
 const salonMap = {
     'saintjeandeluz-16avril': { date: '16 avril 2026', time: '9h - 15h', location: 'Saint Jean De Luz (64)', invitation: 'images/Invitation%20Ephi%202026%20St%20Jean%20De%20Luz%20(1)_page-0001.jpg' },
     'lagrandemotte-27mai': { date: '27 mai 2026', time: '9h - 15h', location: 'La Grande Motte (34)' },
-    'idfsud-3juin': { date: '3 juin 2026', time: '9h - 15h', location: 'IDF sud (91)' },
+    'idfsud-3juin': { date: '3 juin 2026', time: '9h - 15h', location: 'IDF sud (91)', invitation: 'images/Invitation%20Ephi%202026%20IDF%20Sud%20Lieusaint%20(91).jpg' },
     'idfnord-4juin': { date: '4 juin 2026', time: '9h - 15h', location: 'IDF nord (95)', invitation: 'images/Invitation%20Ephi%202026%20IDF%20Nord%20Enghien%20(95)%20(6).jpg' },
     'lens-25juin': { date: '25 juin 2026', time: '9h - 15h', location: 'Lens - Stade Bollaert-Delelis (62)' },
     'lyon-8septembre': { date: '8 septembre 2026', time: '9h - 15h', location: 'Lyon (69)' },
