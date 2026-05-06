@@ -160,14 +160,14 @@ const salonMap = {
     'idfnord-4juin': { date: '4 juin 2026', time: '9h - 15h', location: 'IDF nord (95)', invitation: 'images/Invitation%20Ephi%202026%20IDF%20Nord%20Enghien%20(95)%20(6).jpg' },
     'lens-25juin': { date: '25 juin 2026', time: '9h - 15h', location: 'Lens - Stade Bollaert-Delelis (62)' },
     'lyon-8septembre': { date: '8 septembre 2026', time: '9h - 15h', location: 'Lyon (69)' },
-    'aixenprovence-10septembre': { date: '10 septembre 2026', time: '9h - 15h', location: 'Aix-en-Provence (13)' },
+    'aixenprovence-10septembre': { date: '10 septembre 2026', time: '9h - 15h', location: 'Aix-en-Provence (13)', invitation: 'images/Invitation Ephi 2026 AIX .jpg' },
     'metz-15octobre': { date: '15 octobre 2026', time: '9h - 15h', location: 'Metz (57)' },
     'toulouse-19novembre': { date: '19 novembre 2026', time: '9h - 15h', location: 'Toulouse (31)' },
     'saintmaximin-3decembre': { date: '3 décembre 2026', time: '9h - 15h', location: 'Saint-Maximin (60)' }
 };
 
 // Fonction pour ouvrir le modal avec les informations du salon
-function openRegistrationModal(date, location, time = '9h - 15h', invitationImage = null) {
+function openRegistrationModal(date, location, time = '9h - 15h', invitationImage = null, shareLink = null) {
     // Remplir les champs cachés
     document.getElementById('event_date').value = date;
     document.getElementById('event_location').value = location;
@@ -184,6 +184,17 @@ function openRegistrationModal(date, location, time = '9h - 15h', invitationImag
         invitationEl.style.display = 'block';
     } else if (invitationEl) {
         invitationEl.style.display = 'none';
+    }
+
+    // Gérer l'affichage du lien de partage
+    const shareEl = document.getElementById('modal-share-link');
+    const shareInput = document.getElementById('modal-link-input');
+    if (shareEl && shareInput && shareLink) {
+        shareInput.value = shareLink;
+        shareEl.style.display = 'block';
+    } else if (shareEl) {
+        shareEl.style.display = 'none';
+        if (shareInput) shareInput.value = '';
     }
 
     // Afficher le modal
@@ -206,7 +217,8 @@ function checkUrlParams() {
         const salon = salonMap[salonId];
         // Ouvrir automatiquement le modal avec le salon sélectionné
         setTimeout(() => {
-            openRegistrationModal(salon.date, salon.location, salon.time, salon.invitation);
+            const shareLink = `https://ephi.pro/?salon=${salonId}`;
+            openRegistrationModal(salon.date, salon.location, salon.time, salon.invitation, shareLink);
         }, 500); // Petit délai pour permettre le chargement de la page
     }
 }
@@ -256,9 +268,33 @@ registerButtons.forEach(button => {
         const date = button.getAttribute('data-date');
         const location = button.getAttribute('data-location');
         const invitationImage = button.getAttribute('data-invitation');
-        openRegistrationModal(date, location, '9h - 15h', invitationImage);
+        const salonId = button.getAttribute('data-salon');
+        const shareLink = salonId ? `https://ephi.pro/?salon=${salonId}` : null;
+        openRegistrationModal(date, location, '9h - 15h', invitationImage, shareLink);
     });
 });
+
+// Gestionnaire pour copier le lien depuis le modal
+const modalCopyBtn = document.getElementById('modal-copy-link');
+if (modalCopyBtn) {
+    modalCopyBtn.addEventListener('click', () => {
+        const shareInput = document.getElementById('modal-link-input');
+        if (!shareInput) return;
+        const val = shareInput.value;
+        navigator.clipboard.writeText(val).then(() => {
+            const original = modalCopyBtn.textContent;
+            modalCopyBtn.textContent = '✓ Copié !';
+            modalCopyBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            setTimeout(() => {
+                modalCopyBtn.textContent = original;
+                modalCopyBtn.style.background = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Erreur copie modal:', err);
+            alert('Impossible de copier automatiquement. Veuillez copier manuellement.');
+        });
+    });
+}
 
 // Fermer le modal
 function closeModal() {
