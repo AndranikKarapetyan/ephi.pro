@@ -167,7 +167,7 @@ const salonMap = {
 };
 
 // Fonction pour ouvrir le modal avec les informations du salon
-function openRegistrationModal(date, location, time = '9h - 15h', invitationImage = null, shareLink = null) {
+function openRegistrationModal(date, location, time = '9h - 15h', invitationImage = null) {
     // Remplir les champs cachés
     document.getElementById('event_date').value = date;
     document.getElementById('event_location').value = location;
@@ -186,16 +186,6 @@ function openRegistrationModal(date, location, time = '9h - 15h', invitationImag
         invitationEl.style.display = 'none';
     }
 
-    // Gérer l'affichage du lien de partage
-    const shareEl = document.getElementById('modal-share-link');
-    const shareInput = document.getElementById('modal-link-input');
-    if (shareEl && shareInput && shareLink) {
-        shareInput.value = shareLink;
-        shareEl.style.display = 'block';
-    } else if (shareEl) {
-        shareEl.style.display = 'none';
-        if (shareInput) shareInput.value = '';
-    }
 
     // Afficher le modal
     registrationModal.style.display = 'block';
@@ -217,8 +207,7 @@ function checkUrlParams() {
         const salon = salonMap[salonId];
         // Ouvrir automatiquement le modal avec le salon sélectionné
         setTimeout(() => {
-            const shareLink = `https://ephi.pro/?salon=${salonId}`;
-            openRegistrationModal(salon.date, salon.location, salon.time, salon.invitation, shareLink);
+            openRegistrationModal(salon.date, salon.location, salon.time, salon.invitation);
         }, 500); // Petit délai pour permettre le chargement de la page
     }
 }
@@ -268,33 +257,9 @@ registerButtons.forEach(button => {
         const date = button.getAttribute('data-date');
         const location = button.getAttribute('data-location');
         const invitationImage = button.getAttribute('data-invitation');
-        const salonId = button.getAttribute('data-salon');
-        const shareLink = salonId ? `https://ephi.pro/?salon=${salonId}` : null;
-        openRegistrationModal(date, location, '9h - 15h', invitationImage, shareLink);
+        openRegistrationModal(date, location, '9h - 15h', invitationImage);
     });
 });
-
-// Gestionnaire pour copier le lien depuis le modal
-const modalCopyBtn = document.getElementById('modal-copy-link');
-if (modalCopyBtn) {
-    modalCopyBtn.addEventListener('click', () => {
-        const shareInput = document.getElementById('modal-link-input');
-        if (!shareInput) return;
-        const val = shareInput.value;
-        navigator.clipboard.writeText(val).then(() => {
-            const original = modalCopyBtn.textContent;
-            modalCopyBtn.textContent = '✓ Copié !';
-            modalCopyBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-            setTimeout(() => {
-                modalCopyBtn.textContent = original;
-                modalCopyBtn.style.background = '';
-            }, 2000);
-        }).catch(err => {
-            console.error('Erreur copie modal:', err);
-            alert('Impossible de copier automatiquement. Veuillez copier manuellement.');
-        });
-    });
-}
 
 // Fermer le modal
 function closeModal() {
