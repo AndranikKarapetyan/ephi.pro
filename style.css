@@ -36,6 +36,15 @@ body {
     padding: 0 20px;
 }
 
+.hidden-access-link {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 /* Header & Navigation */
 .header {
     position: fixed;
