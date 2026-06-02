@@ -583,15 +583,7 @@
         registrations = Array.isArray(payload.registrations) ? payload.registrations : [];
         renderList();
 
-        const debug = payload.debug || {};
-        const source = payload.source || 'inconnu';
-        const netlifyStatus = debug.netlifyStatus || {};
-        const netlifyReason = netlifyStatus.reason ? `, netlifyReason: ${netlifyStatus.reason}` : '';
-        const netlifyEnv = netlifyStatus.reason === 'missing_token_or_site_id'
-          ? `, tokenSet: ${netlifyStatus.tokenSet ? 'oui' : 'non'}, siteIdSet: ${netlifyStatus.siteIdSet ? 'oui' : 'non'}`
-          : '';
-        const details = `source: ${source} | supabase: ${debug.supabaseCount ?? 0}, netlify: ${debug.netlifyCount ?? 0}, local: ${debug.localCount ?? 0}, filtres: ${debug.filteredCount ?? registrations.length}${netlifyReason}${netlifyEnv}`;
-        statusTextEl.textContent = `${registrations.length} inscription(s) chargee(s). ${details}`;
+        statusTextEl.textContent = `${registrations.length} inscription(s) chargee(s).`;
       } catch (error) {
         listEl.innerHTML = `<div class="error">Impossible de charger la liste: ${escapeHtml(error.message)}</div>`;
         summaryEl.innerHTML = '';
