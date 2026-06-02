@@ -75,6 +75,23 @@
       border: 1px solid var(--line);
     }
 
+    .search-input {
+      min-width: 260px;
+      max-width: 420px;
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .search-input:focus {
+      outline: 2px solid rgba(43, 126, 193, 0.25);
+      border-color: var(--brand-2);
+    }
+
     .status-text {
       margin-left: auto;
       color: var(--muted);
@@ -223,6 +240,7 @@
       <button class="btn btn-primary" id="saveBtn" type="button">Sauvegarder</button>
       <button class="btn btn-secondary" id="csvBtn" type="button">Exporter CSV</button>
       <button class="btn btn-secondary" id="reloadBtn" type="button">Recharger la liste</button>
+      <input type="search" id="searchInput" class="search-input" placeholder="Rechercher un client: nom, societe, email, telephone" aria-label="Rechercher un client">
       <div class="status-text" id="statusText">Chargement...</div>
     </div>
 
@@ -239,9 +257,11 @@
     const saveBtn = document.getElementById('saveBtn');
     const csvBtn = document.getElementById('csvBtn');
     const reloadBtn = document.getElementById('reloadBtn');
+    const searchInput = document.getElementById('searchInput');
 
     let registrations = [];
     let state = loadState();
+    let searchQuery = '';
 
     function getToken() {
       const params = new URLSearchParams(window.location.search);
@@ -307,13 +327,13 @@
       });
     }
 
-    function computeSummary() {
+    function computeSummary(visibleRegistrations = registrations) {
       let totalPeople = 0;
       let present = 0;
       let absent = 0;
       let unset = 0;
 
-      registrations.forEach((reg) => {
+      visibleRegistrations.forEach((reg) => {
         const rec = state[reg.id] || { participantStatus: '', companions: [] };
         totalPeople += 1;
 
@@ -330,7 +350,7 @@
       });
 
       summaryEl.innerHTML = `
-        <div class="summary-card"><div class="summary-title">Inscriptions</div><div class="summary-value">${registrations.length}</div></div>
+        <div class="summary-card"><div class="summary-title">Inscriptions</div><div class="summary-value">${visibleRegistrations.length}</div></div>
         <div class="summary-card"><div class="summary-title">Total personnes</div><div class="summary-value">${totalPeople}</div></div>
         <div class="summary-card"><div class="summary-title">Presents</div><div class="summary-value" style="color:var(--good)">${present}</div></div>
         <div class="summary-card"><div class="summary-title">Absents</div><div class="summary-value" style="color:var(--bad)">${absent}</div></div>
@@ -338,16 +358,38 @@
       `;
     }
 
+    function getFilteredRegistrations() {
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) {
+        return registrations;
+      }
+
+      return registrations.filter((reg) => {
+        const haystack = [
+          reg.user_name || '',
+          reg.company_name || '',
+          reg.user_email || '',
+          reg.phone || ''
+        ].join(' ').toLowerCase();
+
+        return haystack.includes(query);
+      });
+    }
+
     function renderList() {
-      if (!registrations.length) {
-        listEl.innerHTML = '<div class="empty">Aucun participant trouve pour IDF Nord - 4 juin.</div>';
-        computeSummary();
+      const visibleRegistrations = getFilteredRegistrations();
+
+      if (!visibleRegistrations.length) {
+        listEl.innerHTML = searchQuery.trim()
+          ? '<div class="empty">Aucun client ne correspond a votre recherche.</div>'
+          : '<div class="empty">Aucun participant trouve pour IDF Nord - 4 juin.</div>';
+        computeSummary(visibleRegistrations);
         return;
       }
 
       const fragment = document.createDocumentFragment();
 
-      registrations.forEach((reg) => {
+      visibleRegistrations.forEach((reg) => {
         ensureRecord(reg);
 
         const rec = state[reg.id];
@@ -379,7 +421,7 @@
           if (participantPresent.checked) rec.participantStatus = 'present';
           else if (participantAbsent.checked) rec.participantStatus = 'absent';
           else rec.participantStatus = '';
-          computeSummary();
+          computeSummary(getFilteredRegistrations());
         });
 
         const companionCount = Number(reg.companions || 0);
@@ -427,7 +469,7 @@
               if (presentCb.checked) comp.status = 'present';
               else if (absentCb.checked) comp.status = 'absent';
               else comp.status = '';
-              computeSummary();
+              computeSummary(getFilteredRegistrations());
             });
 
             row.appendChild(firstName);
@@ -450,7 +492,7 @@
 
       listEl.innerHTML = '';
       listEl.appendChild(fragment);
-      computeSummary();
+      computeSummary(visibleRegistrations);
     }
 
     function toCsvValue(value) {
@@ -572,6 +614,10 @@
       exportCsv();
     });
     reloadBtn.addEventListener('click', loadRegistrations);
+    searchInput.addEventListener('input', () => {
+      searchQuery = searchInput.value;
+      renderList();
+    });
 
     loadRegistrations();
   </script>
