@@ -543,7 +543,9 @@
 
         const debug = payload.debug || {};
         const source = payload.source || 'inconnu';
-        const details = `source: ${source} | supabase: ${debug.supabaseCount ?? 0}, netlify: ${debug.netlifyCount ?? 0}, local: ${debug.localCount ?? 0}, filtres: ${debug.filteredCount ?? registrations.length}`;
+        const netlifyStatus = debug.netlifyStatus || {};
+        const netlifyReason = netlifyStatus.reason ? `, netlifyReason: ${netlifyStatus.reason}` : '';
+        const details = `source: ${source} | supabase: ${debug.supabaseCount ?? 0}, netlify: ${debug.netlifyCount ?? 0}, local: ${debug.localCount ?? 0}, filtres: ${debug.filteredCount ?? registrations.length}${netlifyReason}`;
         statusTextEl.textContent = `${registrations.length} inscription(s) chargee(s). ${details}`;
       } catch (error) {
         listEl.innerHTML = `<div class="error">Impossible de charger la liste: ${escapeHtml(error.message)}</div>`;

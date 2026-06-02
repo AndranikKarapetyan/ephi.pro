@@ -77,10 +77,21 @@ async function fetchJson(url) {
 
 async function readNetlifyFormRegistrations() {
   if (!NETLIFY_API_TOKEN || !NETLIFY_SITE_ID) {
-    return [];
+    return {
+      registrations: [],
+      status: {
+        enabled: false,
+        tokenSet: !!NETLIFY_API_TOKEN,
+        siteIdSet: !!NETLIFY_SITE_ID,
+        formName: NETLIFY_FORM_NAME,
+        formIdSet: !!NETLIFY_FORM_ID,
+        reason: 'missing_token_or_site_id'
+      }
+    };
   }
 
   let targetFormId = NETLIFY_FORM_ID;
+  let formResolvedBy = NETLIFY_FORM_ID ? 'env-form-id' : 'name-lookup';
 
   if (!targetFormId) {
     const formsUrl = `https://api.netlify.com/api/v1/sites/${encodeURIComponent(NETLIFY_SITE_ID)}/forms`;
@@ -90,10 +101,21 @@ async function readNetlifyFormRegistrations() {
       : null;
 
     if (!matched || !matched.id) {
-      return [];
+      return {
+        registrations: [],
+        status: {
+          enabled: true,
+          tokenSet: true,
+          siteIdSet: true,
+          formName: NETLIFY_FORM_NAME,
+          formIdSet: false,
+          reason: 'form_not_found'
+        }
+      };
     }
 
     targetFormId = String(matched.id);
+    formResolvedBy = 'name-lookup';
   }
 
   const submissions = [];
@@ -117,7 +139,7 @@ async function readNetlifyFormRegistrations() {
     page += 1;
   }
 
-  return submissions.map((item, index) => {
+  const registrations = submissions.map((item, index) => {
     const data = item && item.data ? item.data : {};
     return {
       id: item.id || `netlify_sub_${index + 1}`,
@@ -132,6 +154,19 @@ async function readNetlifyFormRegistrations() {
       registered_at: item.created_at || ''
     };
   });
+
+  return {
+    registrations,
+    status: {
+      enabled: true,
+      tokenSet: true,
+      siteIdSet: true,
+      formName: NETLIFY_FORM_NAME,
+      formIdSet: !!NETLIFY_FORM_ID,
+      formResolvedBy,
+      reason: 'ok'
+    }
+  };
 }
 
 exports.handler = async (event) => {
@@ -173,6 +208,14 @@ exports.handler = async (event) => {
     let supabaseCount = 0;
     let netlifyCount = 0;
     let localCount = 0;
+    let netlifyStatus = {
+      enabled: false,
+      tokenSet: !!NETLIFY_API_TOKEN,
+      siteIdSet: !!NETLIFY_SITE_ID,
+      formName: NETLIFY_FORM_NAME,
+      formIdSet: !!NETLIFY_FORM_ID,
+      reason: 'not_tried'
+    };
 
     if (supabase) {
       const { data, error } = await supabase
@@ -192,7 +235,9 @@ exports.handler = async (event) => {
     }
 
     if (sourceRegistrations.length === 0) {
-      const netlifyRegistrations = await readNetlifyFormRegistrations();
+      const netlifyResult = await readNetlifyFormRegistrations();
+      const netlifyRegistrations = netlifyResult.registrations || [];
+      netlifyStatus = netlifyResult.status || netlifyStatus;
       netlifyCount = netlifyRegistrations.length;
       if (netlifyRegistrations.length > 0) {
         source = 'netlify-forms';
@@ -221,6 +266,7 @@ exports.handler = async (event) => {
           supabaseCount,
           netlifyCount,
           localCount,
+          netlifyStatus,
           filteredCount: registrations.length
         },
         registrations
