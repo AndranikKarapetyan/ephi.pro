@@ -3,6 +3,10 @@ const fs = require('fs/promises');
 const path = require('path');
 
 const ATTENDANCE_SECRET = (process.env.ATTENDANCE_SECRET || 'idf-nord-4juin-2026').trim();
+const NETLIFY_API_TOKEN = (process.env.NETLIFY_API_TOKEN || '').trim();
+const NETLIFY_SITE_ID = (process.env.NETLIFY_SITE_ID || process.env.SITE_ID || '').trim();
+const NETLIFY_FORM_NAME = (process.env.NETLIFY_FORM_NAME || 'inscription-salon').trim();
+const NETLIFY_FORM_ID = (process.env.NETLIFY_FORM_ID || '').trim();
 
 let supabase = null;
 if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
@@ -55,6 +59,81 @@ async function readLocalRegistrations() {
   return [];
 }
 
+async function fetchJson(url) {
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${NETLIFY_API_TOKEN}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`Netlify API ${response.status}: ${message}`);
+  }
+
+  return response.json();
+}
+
+async function readNetlifyFormRegistrations() {
+  if (!NETLIFY_API_TOKEN || !NETLIFY_SITE_ID) {
+    return [];
+  }
+
+  let targetFormId = NETLIFY_FORM_ID;
+
+  if (!targetFormId) {
+    const formsUrl = `https://api.netlify.com/api/v1/sites/${encodeURIComponent(NETLIFY_SITE_ID)}/forms`;
+    const forms = await fetchJson(formsUrl);
+    const matched = Array.isArray(forms)
+      ? forms.find((f) => String(f.name || '').trim() === NETLIFY_FORM_NAME)
+      : null;
+
+    if (!matched || !matched.id) {
+      return [];
+    }
+
+    targetFormId = String(matched.id);
+  }
+
+  const submissions = [];
+  let page = 1;
+  const perPage = 100;
+
+  while (true) {
+    const submissionsUrl = `https://api.netlify.com/api/v1/forms/${encodeURIComponent(targetFormId)}/submissions?page=${page}&per_page=${perPage}`;
+    const chunk = await fetchJson(submissionsUrl);
+
+    if (!Array.isArray(chunk) || chunk.length === 0) {
+      break;
+    }
+
+    submissions.push(...chunk);
+
+    if (chunk.length < perPage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return submissions.map((item, index) => {
+    const data = item && item.data ? item.data : {};
+    return {
+      id: item.id || `netlify_sub_${index + 1}`,
+      event_date: data.event_date || '',
+      event_location: data.event_location || '',
+      organization_type: data.organization_type || '',
+      company_name: data.company_name || '',
+      user_name: data.user_name || '',
+      user_email: data.user_email || '',
+      phone: data.phone || '',
+      companions: data.companions || 0,
+      registered_at: item.created_at || ''
+    };
+  });
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -104,8 +183,14 @@ exports.handler = async (event) => {
 
       sourceRegistrations = data || [];
     } else {
-      source = 'local-json';
-      sourceRegistrations = await readLocalRegistrations();
+      const netlifyRegistrations = await readNetlifyFormRegistrations();
+      if (netlifyRegistrations.length > 0) {
+        source = 'netlify-forms';
+        sourceRegistrations = netlifyRegistrations;
+      } else {
+        source = 'local-json';
+        sourceRegistrations = await readLocalRegistrations();
+      }
     }
 
     const registrations = sourceRegistrations
