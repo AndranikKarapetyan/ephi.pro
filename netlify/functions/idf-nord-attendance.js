@@ -169,7 +169,10 @@ exports.handler = async (event) => {
 
   try {
     let sourceRegistrations = [];
-    let source = 'supabase';
+    let source = 'none';
+    let supabaseCount = 0;
+    let netlifyCount = 0;
+    let localCount = 0;
 
     if (supabase) {
       const { data, error } = await supabase
@@ -182,15 +185,26 @@ exports.handler = async (event) => {
       }
 
       sourceRegistrations = data || [];
-    } else {
+      supabaseCount = sourceRegistrations.length;
+      if (sourceRegistrations.length > 0) {
+        source = 'supabase';
+      }
+    }
+
+    if (sourceRegistrations.length === 0) {
       const netlifyRegistrations = await readNetlifyFormRegistrations();
+      netlifyCount = netlifyRegistrations.length;
       if (netlifyRegistrations.length > 0) {
         source = 'netlify-forms';
         sourceRegistrations = netlifyRegistrations;
-      } else {
-        source = 'local-json';
-        sourceRegistrations = await readLocalRegistrations();
       }
+    }
+
+    if (sourceRegistrations.length === 0) {
+      const localRegistrations = await readLocalRegistrations();
+      localCount = localRegistrations.length;
+      source = 'local-json';
+      sourceRegistrations = localRegistrations;
     }
 
     const registrations = sourceRegistrations
@@ -200,7 +214,17 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, source, registrations })
+      body: JSON.stringify({
+        success: true,
+        source,
+        debug: {
+          supabaseCount,
+          netlifyCount,
+          localCount,
+          filteredCount: registrations.length
+        },
+        registrations
+      })
     };
   } catch (err) {
     return {
