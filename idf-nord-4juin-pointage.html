@@ -173,6 +173,36 @@
       color: var(--muted);
     }
 
+    .companions-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .companions-head h4 {
+      margin: 0;
+    }
+
+    .btn-add-companion {
+      min-width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--brand);
+      font-size: 1.2rem;
+      line-height: 1;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-add-companion:hover {
+      background: #f3f8ff;
+      border-color: var(--brand-2);
+    }
+
     .companion-grid { display: grid; gap: 10px; }
 
     .companion-row {
@@ -305,10 +335,6 @@
       while (state[key].companions.length < count) {
         state[key].companions.push({ firstName: '', lastName: '', status: '' });
       }
-
-      if (state[key].companions.length > count) {
-        state[key].companions = state[key].companions.slice(0, count);
-      }
     }
 
     function makeExclusiveCheckboxes(current, other, onUpdate) {
@@ -424,68 +450,83 @@
           computeSummary(getFilteredRegistrations());
         });
 
-        const companionCount = Number(reg.companions || 0);
-        if (companionCount > 0) {
-          const companionsWrap = document.createElement('div');
-          companionsWrap.className = 'companions';
-          companionsWrap.innerHTML = '<h4>Accompagnateurs</h4>';
+        const plannedCompanions = Number(reg.companions || 0);
+        const companionsWrap = document.createElement('div');
+        companionsWrap.className = 'companions';
 
-          const grid = document.createElement('div');
-          grid.className = 'companion-grid';
+        const companionsHead = document.createElement('div');
+        companionsHead.className = 'companions-head';
+        companionsHead.innerHTML = '<h4>Accompagnateurs</h4>';
 
-          rec.companions.forEach((comp, index) => {
-            const row = document.createElement('div');
-            row.className = 'companion-row';
+        const addCompanionBtn = document.createElement('button');
+        addCompanionBtn.type = 'button';
+        addCompanionBtn.className = 'btn-add-companion';
+        addCompanionBtn.title = 'Ajouter un accompagnateur';
+        addCompanionBtn.setAttribute('aria-label', 'Ajouter un accompagnateur');
+        addCompanionBtn.textContent = '+';
+        addCompanionBtn.addEventListener('click', () => {
+          rec.companions.push({ firstName: '', lastName: '', status: '' });
+          renderList();
+        });
 
-            const firstName = document.createElement('input');
-            firstName.type = 'text';
-            firstName.placeholder = `Prenom accompagnateur ${index + 1}`;
-            firstName.value = comp.firstName || '';
+        companionsHead.appendChild(addCompanionBtn);
+        companionsWrap.appendChild(companionsHead);
 
-            const lastName = document.createElement('input');
-            lastName.type = 'text';
-            lastName.placeholder = `Nom accompagnateur ${index + 1}`;
-            lastName.value = comp.lastName || '';
+        const grid = document.createElement('div');
+        grid.className = 'companion-grid';
 
-            const checks = document.createElement('div');
-            checks.className = 'checks';
-            checks.innerHTML = `
-              <label class="check"><input type="checkbox" data-role="present" ${comp.status === 'present' ? 'checked' : ''}> Present</label>
-              <label class="check"><input type="checkbox" data-role="absent" ${comp.status === 'absent' ? 'checked' : ''}> Absent</label>
-            `;
+        rec.companions.forEach((comp, index) => {
+          const row = document.createElement('div');
+          row.className = 'companion-row';
 
-            const presentCb = checks.querySelector('[data-role="present"]');
-            const absentCb = checks.querySelector('[data-role="absent"]');
+          const firstName = document.createElement('input');
+          firstName.type = 'text';
+          firstName.placeholder = `Prenom accompagnateur ${index + 1}`;
+          firstName.value = comp.firstName || '';
 
-            firstName.addEventListener('input', () => {
-              comp.firstName = firstName.value;
-            });
+          const lastName = document.createElement('input');
+          lastName.type = 'text';
+          lastName.placeholder = `Nom accompagnateur ${index + 1}`;
+          lastName.value = comp.lastName || '';
 
-            lastName.addEventListener('input', () => {
-              comp.lastName = lastName.value;
-            });
+          const checks = document.createElement('div');
+          checks.className = 'checks';
+          checks.innerHTML = `
+            <label class="check"><input type="checkbox" data-role="present" ${comp.status === 'present' ? 'checked' : ''}> Present</label>
+            <label class="check"><input type="checkbox" data-role="absent" ${comp.status === 'absent' ? 'checked' : ''}> Absent</label>
+          `;
 
-            makeExclusiveCheckboxes(presentCb, absentCb, () => {
-              if (presentCb.checked) comp.status = 'present';
-              else if (absentCb.checked) comp.status = 'absent';
-              else comp.status = '';
-              computeSummary(getFilteredRegistrations());
-            });
+          const presentCb = checks.querySelector('[data-role="present"]');
+          const absentCb = checks.querySelector('[data-role="absent"]');
 
-            row.appendChild(firstName);
-            row.appendChild(lastName);
-            row.appendChild(checks);
-            grid.appendChild(row);
+          firstName.addEventListener('input', () => {
+            comp.firstName = firstName.value;
           });
 
-          companionsWrap.appendChild(grid);
-          const legend = document.createElement('p');
-          legend.className = 'legend';
-          legend.textContent = 'Renseignez nom et prenom de chaque accompagnateur avant export CSV.';
-          companionsWrap.appendChild(legend);
+          lastName.addEventListener('input', () => {
+            comp.lastName = lastName.value;
+          });
 
-          card.appendChild(companionsWrap);
-        }
+          makeExclusiveCheckboxes(presentCb, absentCb, () => {
+            if (presentCb.checked) comp.status = 'present';
+            else if (absentCb.checked) comp.status = 'absent';
+            else comp.status = '';
+            computeSummary(getFilteredRegistrations());
+          });
+
+          row.appendChild(firstName);
+          row.appendChild(lastName);
+          row.appendChild(checks);
+          grid.appendChild(row);
+        });
+
+        companionsWrap.appendChild(grid);
+        const legend = document.createElement('p');
+        legend.className = 'legend';
+        legend.textContent = `Prevus: ${plannedCompanions} • Saisis: ${rec.companions.length}. Utilisez + pour ajouter un accompagnateur supplementaire.`;
+        companionsWrap.appendChild(legend);
+
+        card.appendChild(companionsWrap);
 
         fragment.appendChild(card);
       });
