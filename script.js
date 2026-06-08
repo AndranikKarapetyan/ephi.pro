@@ -343,9 +343,9 @@ document.addEventListener('keydown', (e) => {
 registrationForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     registrationFormError.textContent = '';
+    const submitBtn = registrationForm.querySelector('button[type="submit"]');
 
     try {
-        const submitBtn = registrationForm.querySelector('button[type="submit"]');
         const formData = new FormData(registrationForm);
         const userName = formData.get('user_name')?.toString().trim();
         const userEmail = formData.get('user_email')?.toString().trim();
