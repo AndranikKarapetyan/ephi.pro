@@ -85,11 +85,10 @@ const saveRegistrationRecord = async (registration) => {
   saveLocalRegistrations(registrations);
 };
 
-const findMatchingRegistrations = (registrations, normalizedEmail, normalizedName) => {
+const findMatchingRegistrations = (registrations, normalizedEmail) => {
   return registrations.filter((registration) => {
     const emailMatch = normalizeValue(registration.user_email) === normalizedEmail;
-    const nameMatch = normalizeValue(registration.user_name) === normalizedName;
-    return emailMatch || nameMatch;
+    return emailMatch;
   });
 };
 
@@ -158,9 +157,8 @@ exports.handler = async (event, context) => {
     }
 
     const normalizedEmail = normalizeValue(userEmail);
-    const normalizedName = normalizeValue(userName);
     const registrations = await getAllRegistrations();
-    const matches = findMatchingRegistrations(registrations, normalizedEmail, normalizedName);
+    const matches = findMatchingRegistrations(registrations, normalizedEmail);
 
     const sameSalonMatch = matches.find((registration) => {
       return normalizeValue(registration.event_date) === normalizeValue(eventDate)

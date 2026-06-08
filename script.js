@@ -393,17 +393,17 @@ registrationForm.addEventListener('submit', async (e) => {
             });
         } catch (error) {
             console.error('Échec de la vérification du service:', error);
-            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
-            nativeSubmitInProgress = true;
-            registrationForm.submit();
+            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
+            submitBtn.textContent = 'Confirmer l\'inscription';
+            submitBtn.disabled = false;
             return;
         }
 
         if (!checkResponse.ok && checkResponse.status !== 409) {
             console.error('Vérification du service non disponible:', checkResponse.status);
-            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
-            nativeSubmitInProgress = true;
-            registrationForm.submit();
+            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
+            submitBtn.textContent = 'Confirmer l\'inscription';
+            submitBtn.disabled = false;
             return;
         }
 
@@ -412,9 +412,9 @@ registrationForm.addEventListener('submit', async (e) => {
             checkData = await checkResponse.json();
         } catch (error) {
             console.error('Réponse JSON invalide pour la vérification:', error);
-            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
-            nativeSubmitInProgress = true;
-            registrationForm.submit();
+            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
+            submitBtn.textContent = 'Confirmer l\'inscription';
+            submitBtn.disabled = false;
             return;
         }
 
@@ -448,9 +448,9 @@ registrationForm.addEventListener('submit', async (e) => {
             });
         } catch (error) {
             console.error('Échec de l\'envoi du service:', error);
-            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
-            nativeSubmitInProgress = true;
-            registrationForm.submit();
+            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
+            submitBtn.textContent = 'Confirmer l\'inscription';
+            submitBtn.disabled = false;
             return;
         }
 
@@ -466,9 +466,9 @@ registrationForm.addEventListener('submit', async (e) => {
                 return;
             }
             console.error('Réponse inattendue du service:', registerResponse.status);
-            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
-            nativeSubmitInProgress = true;
-            registrationForm.submit();
+            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
+            submitBtn.textContent = 'Confirmer l\'inscription';
+            submitBtn.disabled = false;
             return;
         }
 
@@ -476,9 +476,9 @@ registrationForm.addEventListener('submit', async (e) => {
         registrationFormError.textContent = registerData.message || 'Une erreur est survenue lors de l\'inscription.';
     } catch (error) {
         console.error(error);
-        registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
-        nativeSubmitInProgress = true;
-        registrationForm.submit();
+        registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
+        submitBtn.textContent = 'Confirmer l\'inscription';
+        submitBtn.disabled = false;
         return;
     } finally {
         if (!nativeSubmitInProgress) {
