@@ -159,6 +159,44 @@ const registrationFormError = document.getElementById('registrationFormError');
 const functionPath = '/.netlify/functions/inscription';
 let nativeSubmitInProgress = false;
 
+function normalizeRegistrationValue(value) {
+    return (value || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function getLocalRegistrationKey(email, eventDate, eventLocation) {
+    const normalizedEmail = normalizeRegistrationValue(email);
+    const normalizedDate = normalizeRegistrationValue(eventDate);
+    const normalizedLocation = normalizeRegistrationValue(eventLocation);
+    return `${normalizedEmail}__${normalizedDate}__${normalizedLocation}`;
+}
+
+function isDuplicateInLocalCache(email, eventDate, eventLocation) {
+    const key = getLocalRegistrationKey(email, eventDate, eventLocation);
+    const cache = JSON.parse(localStorage.getItem('ephi_registrations_cache') || '[]');
+    return cache.includes(key);
+}
+
+function rememberLocalRegistration(email, eventDate, eventLocation) {
+    const key = getLocalRegistrationKey(email, eventDate, eventLocation);
+    const cache = JSON.parse(localStorage.getItem('ephi_registrations_cache') || '[]');
+    if (!cache.includes(key)) {
+        cache.push(key);
+        localStorage.setItem('ephi_registrations_cache', JSON.stringify(cache));
+    }
+}
+
+function submitFormNatively(formData, submitBtn) {
+    const userEmail = formData.get('user_email')?.toString().trim() || '';
+    const eventDate = formData.get('event_date')?.toString().trim() || '';
+    const eventLocation = formData.get('event_location')?.toString().trim() || '';
+    rememberLocalRegistration(userEmail, eventDate, eventLocation);
+
+    nativeSubmitInProgress = true;
+    submitBtn.textContent = 'Envoi en cours...';
+    submitBtn.disabled = true;
+    registrationForm.submit();
+}
+
 function renderCompanionFields(count) {
     companionsDetailsContainer.innerHTML = '';
 
@@ -355,10 +393,18 @@ registrationForm.addEventListener('submit', async (e) => {
         const userName = formData.get('user_name')?.toString().trim();
         const userEmail = formData.get('user_email')?.toString().trim();
         const phone = formData.get('phone')?.toString().trim();
+        const eventDate = formData.get('event_date')?.toString().trim();
+        const eventLocation = formData.get('event_location')?.toString().trim();
         const companions = Number(formData.get('companions') || '0');
 
         if (!userName || !userEmail || !phone) {
             registrationFormError.textContent = 'Veuillez remplir tous les champs obligatoires du formulaire.';
+            submitBtn.disabled = false;
+            return;
+        }
+
+        if (isDuplicateInLocalCache(userEmail, eventDate, eventLocation)) {
+            registrationFormError.textContent = 'Cette adresse email est déjà inscrite à ce salon.';
             submitBtn.disabled = false;
             return;
         }
@@ -393,17 +439,15 @@ registrationForm.addEventListener('submit', async (e) => {
             });
         } catch (error) {
             console.error('Échec de la vérification du service:', error);
-            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
-            submitBtn.textContent = 'Confirmer l\'inscription';
-            submitBtn.disabled = false;
+            registrationFormError.textContent = 'Service de vérification indisponible. Envoi standard du formulaire...';
+            submitFormNatively(formData, submitBtn);
             return;
         }
 
         if (!checkResponse.ok && checkResponse.status !== 409) {
             console.error('Vérification du service non disponible:', checkResponse.status);
-            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
-            submitBtn.textContent = 'Confirmer l\'inscription';
-            submitBtn.disabled = false;
+            registrationFormError.textContent = 'Service de vérification indisponible. Envoi standard du formulaire...';
+            submitFormNatively(formData, submitBtn);
             return;
         }
 
@@ -412,9 +456,8 @@ registrationForm.addEventListener('submit', async (e) => {
             checkData = await checkResponse.json();
         } catch (error) {
             console.error('Réponse JSON invalide pour la vérification:', error);
-            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
-            submitBtn.textContent = 'Confirmer l\'inscription';
-            submitBtn.disabled = false;
+            registrationFormError.textContent = 'Service de vérification indisponible. Envoi standard du formulaire...';
+            submitFormNatively(formData, submitBtn);
             return;
         }
 
@@ -448,9 +491,8 @@ registrationForm.addEventListener('submit', async (e) => {
             });
         } catch (error) {
             console.error('Échec de l\'envoi du service:', error);
-            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
-            submitBtn.textContent = 'Confirmer l\'inscription';
-            submitBtn.disabled = false;
+            registrationFormError.textContent = 'Service d\'inscription indisponible. Envoi standard du formulaire...';
+            submitFormNatively(formData, submitBtn);
             return;
         }
 
@@ -471,9 +513,8 @@ registrationForm.addEventListener('submit', async (e) => {
                 return;
             }
             console.error('Réponse inattendue du service:', registerResponse.status);
-            registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
-            submitBtn.textContent = 'Confirmer l\'inscription';
-            submitBtn.disabled = false;
+            registrationFormError.textContent = 'Service d\'inscription indisponible. Envoi standard du formulaire...';
+            submitFormNatively(formData, submitBtn);
             return;
         }
 
@@ -485,6 +526,7 @@ registrationForm.addEventListener('submit', async (e) => {
 
         const registerData = await registerResponse.json();
         if (registerData.success) {
+            rememberLocalRegistration(userEmail, eventDate, eventLocation);
             window.location.href = registerData.redirect || '/merci-inscription.html';
             return;
         }
@@ -492,9 +534,9 @@ registrationForm.addEventListener('submit', async (e) => {
         registrationFormError.textContent = registerData.message || 'Une erreur est survenue lors de l\'inscription.';
     } catch (error) {
         console.error(error);
-        registrationFormError.textContent = 'Service temporairement indisponible. Réessayez dans quelques instants.';
-        submitBtn.textContent = 'Confirmer l\'inscription';
-        submitBtn.disabled = false;
+        registrationFormError.textContent = 'Service d\'inscription indisponible. Envoi standard du formulaire...';
+        const safeFormData = new FormData(registrationForm);
+        submitFormNatively(safeFormData, submitBtn);
         return;
     } finally {
         if (!nativeSubmitInProgress) {
