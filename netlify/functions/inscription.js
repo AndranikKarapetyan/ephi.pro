@@ -451,24 +451,31 @@ exports.handler = async (event, context) => {
       }
     });
 
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('SMTP non configuré : les emails ne pourront pas être envoyés.');
+    const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS;
+    if (!smtpConfigured) {
+      console.warn('SMTP non configuré : les emails ne seront pas envoyés.');
     }
 
-    await transporter.sendMail({
-      from: '"EPHI 2026" <noreply@ephi.pro>',
-      to: process.env.NOTIFICATION_EMAIL || 'info@maxiavenue.com',
-      subject: `Nouvelle inscription EPHI 2026 - ${eventDate} - ${companyName}`,
-      html: emailHTML
-    });
+    if (smtpConfigured) {
+      try {
+        await transporter.sendMail({
+          from: '"EPHI 2026" <noreply@ephi.pro>',
+          to: process.env.NOTIFICATION_EMAIL || 'info@maxiavenue.com',
+          subject: `Nouvelle inscription EPHI 2026 - ${eventDate} - ${companyName}`,
+          html: emailHTML
+        });
 
-    if (userEmail) {
-      await transporter.sendMail({
-        from: '"EPHI 2026" <noreply@ephi.pro>',
-        to: userEmail,
-        subject: `Confirmation d'inscription - EPHI 2026 - ${eventDate}`,
-        html: confirmationHTML
-      });
+        if (userEmail) {
+          await transporter.sendMail({
+            from: '"EPHI 2026" <noreply@ephi.pro>',
+            to: userEmail,
+            subject: `Confirmation d'inscription - EPHI 2026 - ${eventDate}`,
+            html: confirmationHTML
+          });
+        }
+      } catch (mailError) {
+        console.error('Erreur envoi email :', mailError);
+      }
     }
 
     return {
