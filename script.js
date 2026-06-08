@@ -459,6 +459,11 @@ registrationForm.addEventListener('submit', async (e) => {
             return;
         }
 
+        if (registerResponse.redirected) {
+            window.location.href = registerResponse.url || '/merci-inscription.html';
+            return;
+        }
+
         if (!registerResponse.ok) {
             if (registerResponse.status === 400 || registerResponse.status === 409) {
                 const registerData = await registerResponse.json();
@@ -472,7 +477,18 @@ registrationForm.addEventListener('submit', async (e) => {
             return;
         }
 
+        const responseContentType = registerResponse.headers.get('content-type') || '';
+        if (!responseContentType.includes('application/json')) {
+            window.location.href = '/merci-inscription.html';
+            return;
+        }
+
         const registerData = await registerResponse.json();
+        if (registerData.success) {
+            window.location.href = registerData.redirect || '/merci-inscription.html';
+            return;
+        }
+
         registrationFormError.textContent = registerData.message || 'Une erreur est survenue lors de l\'inscription.';
     } catch (error) {
         console.error(error);

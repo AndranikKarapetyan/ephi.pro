@@ -477,10 +477,11 @@ exports.handler = async (event, context) => {
     }
 
     return {
-      statusCode: 303,
-      headers: {
-        Location: '/merci-inscription.html'
-      }
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        redirect: '/merci-inscription.html'
+      })
     };
   } catch (error) {
     console.error('Erreur traitement inscription :', error);
