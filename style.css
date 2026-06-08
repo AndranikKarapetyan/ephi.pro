@@ -879,6 +879,26 @@ section {
     user-select: none;
 }
 
+.registration-form .form-error {
+    color: #c53030;
+    background-color: rgba(229, 62, 62, 0.08);
+    border: 1px solid #f5c2c7;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.registration-form .companion-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.registration-form .companion-row input {
+    flex: 1 1 200px;
+}
+
 /* Responsive Modal */
 @media (max-width: 768px) {
     .modal-content {

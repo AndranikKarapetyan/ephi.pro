@@ -152,6 +152,51 @@ const registrationForm = document.getElementById('registrationForm');
 const modalClose = document.querySelector('.modal-close');
 const registerButtons = document.querySelectorAll('.btn-register');
 
+// Champs d'accompagnement et validation du formulaire d'inscription
+const companionsSelect = document.getElementById('companions');
+const companionsDetailsContainer = document.getElementById('companionsDetails');
+const registrationFormError = document.getElementById('registrationFormError');
+
+function renderCompanionFields(count) {
+    companionsDetailsContainer.innerHTML = '';
+
+    for (let i = 1; i <= count; i++) {
+        const companionGroup = document.createElement('div');
+        companionGroup.className = 'form-group';
+        companionGroup.innerHTML = `
+            <label class="form-label">Accompagnant ${i}</label>
+            <div class="companion-row">
+                <input type="text" name="companion_first_name_${i}" placeholder="Prénom accompagnant ${i} *" required>
+                <input type="text" name="companion_last_name_${i}" placeholder="Nom accompagnant ${i} *" required>
+            </div>
+        `;
+        companionsDetailsContainer.appendChild(companionGroup);
+    }
+}
+
+function getCompanionDetails(count) {
+    const details = [];
+
+    for (let i = 1; i <= count; i++) {
+        const firstName = registrationForm.querySelector(`[name="companion_first_name_${i}"]`).value.trim();
+        const lastName = registrationForm.querySelector(`[name="companion_last_name_${i}"]`).value.trim();
+
+        if (!firstName || !lastName) {
+            return { error: `Veuillez renseigner le prénom et le nom de l'accompagnant ${i}.` };
+        }
+
+        details.push({ first_name: firstName, last_name: lastName });
+    }
+
+    return { details };
+}
+
+if (companionsSelect) {
+    companionsSelect.addEventListener('change', (e) => {
+        renderCompanionFields(Number(e.target.value));
+    });
+}
+
 // Mapping des identifiants de salon vers leurs informations
 const salonMap = {
     'saintjeandeluz-16avril': { date: '16 avril 2026', time: '9h - 15h', location: 'Saint Jean De Luz (64)', invitation: 'images/Invitation%20Ephi%202026%20St%20Jean%20De%20Luz%20(1)_page-0001.jpg' },
@@ -296,11 +341,89 @@ document.addEventListener('keydown', (e) => {
 // Gérer la soumission du formulaire d'inscription
 // Gérer la soumission du formulaire d'inscription
 registrationForm.addEventListener('submit', async (e) => {
-    // Pour Netlify Forms, on laisse la soumission native se faire
-    // Le formulaire redirigera automatiquement vers la page de remerciement
+    e.preventDefault();
+    registrationFormError.textContent = '';
+
     const submitBtn = registrationForm.querySelector('button[type="submit"]');
-    submitBtn.textContent = 'Inscription en cours...';
+    const formData = new FormData(registrationForm);
+    const userName = formData.get('user_name')?.toString().trim();
+    const userEmail = formData.get('user_email')?.toString().trim();
+    const phone = formData.get('phone')?.toString().trim();
+    const companions = Number(formData.get('companions') || '0');
+
+    if (!userName || !userEmail || !phone) {
+        registrationFormError.textContent = 'Veuillez remplir tous les champs obligatoires du formulaire.';
+        return;
+    }
+
+    if (companions > 0) {
+        const companionResult = getCompanionDetails(companions);
+        if (companionResult.error) {
+            registrationFormError.textContent = companionResult.error;
+            return;
+        }
+        formData.set('companions_details', JSON.stringify(companionResult.details));
+    } else {
+        formData.set('companions_details', JSON.stringify([]));
+    }
+
+    submitBtn.textContent = 'Vérification...';
     submitBtn.disabled = true;
-    
-    // Pas de preventDefault() - laisse Netlify gérer la soumission naturellement
+
+    const checkParams = new URLSearchParams();
+    for (const [key, value] of formData.entries()) {
+        checkParams.append(key, value);
+    }
+    checkParams.set('action', 'check');
+
+    try {
+        const checkResponse = await fetch('/.netlify/functions/inscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: checkParams.toString()
+        });
+
+        const checkData = await checkResponse.json();
+
+        if (checkData.duplicate) {
+            if (checkData.sameSalon) {
+                registrationFormError.textContent = checkData.message || 'Vous êtes déjà inscrit à ce salon.';
+                submitBtn.textContent = 'Confirmer l\'inscription';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            const confirmMessage = checkData.message || `Vous êtes déjà inscrit au salon ${checkData.otherSalon?.event_date} à ${checkData.otherSalon?.event_location}. Voulez-vous transférer votre inscription vers ce nouveau salon ?`;
+            const userConfirmed = window.confirm(confirmMessage);
+            if (!userConfirmed) {
+                submitBtn.textContent = 'Confirmer l\'inscription';
+                submitBtn.disabled = false;
+                return;
+            }
+            formData.set('force_transfer', 'true');
+        }
+
+        formData.set('action', 'register');
+        submitBtn.textContent = 'Envoi de l\'inscription...';
+
+        const registerResponse = await fetch('/.netlify/functions/inscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: new URLSearchParams(formData).toString()
+        });
+
+        if (registerResponse.status === 303) {
+            window.location.href = '/merci-inscription.html';
+            return;
+        }
+
+        const registerData = await registerResponse.json();
+        registrationFormError.textContent = registerData.message || 'Une erreur est survenue lors de l\'inscription.';
+    } catch (error) {
+        console.error(error);
+        registrationFormError.textContent = 'Une erreur réseau est survenue. Veuillez réessayer.';
+    } finally {
+        submitBtn.textContent = 'Confirmer l\'inscription';
+        submitBtn.disabled = false;
+    }
 });
