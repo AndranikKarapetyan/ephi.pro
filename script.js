@@ -156,6 +156,7 @@ const registerButtons = document.querySelectorAll('.btn-register');
 const companionsSelect = document.getElementById('companions');
 const companionsDetailsContainer = document.getElementById('companionsDetails');
 const registrationFormError = document.getElementById('registrationFormError');
+const functionPath = '/.netlify/functions/inscription';
 
 function renderCompanionFields(count) {
     companionsDetailsContainer.innerHTML = '';
@@ -339,51 +340,75 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Gérer la soumission du formulaire d'inscription
-// Gérer la soumission du formulaire d'inscription
 registrationForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     registrationFormError.textContent = '';
 
-    const submitBtn = registrationForm.querySelector('button[type="submit"]');
-    const formData = new FormData(registrationForm);
-    const userName = formData.get('user_name')?.toString().trim();
-    const userEmail = formData.get('user_email')?.toString().trim();
-    const phone = formData.get('phone')?.toString().trim();
-    const companions = Number(formData.get('companions') || '0');
+    try {
+        const submitBtn = registrationForm.querySelector('button[type="submit"]');
+        const formData = new FormData(registrationForm);
+        const userName = formData.get('user_name')?.toString().trim();
+        const userEmail = formData.get('user_email')?.toString().trim();
+        const phone = formData.get('phone')?.toString().trim();
+        const companions = Number(formData.get('companions') || '0');
 
-    if (!userName || !userEmail || !phone) {
-        registrationFormError.textContent = 'Veuillez remplir tous les champs obligatoires du formulaire.';
-        return;
-    }
-
-    if (companions > 0) {
-        const companionResult = getCompanionDetails(companions);
-        if (companionResult.error) {
-            registrationFormError.textContent = companionResult.error;
+        if (!userName || !userEmail || !phone) {
+            registrationFormError.textContent = 'Veuillez remplir tous les champs obligatoires du formulaire.';
+            submitBtn.disabled = false;
             return;
         }
-        formData.set('companions_details', JSON.stringify(companionResult.details));
-    } else {
-        formData.set('companions_details', JSON.stringify([]));
-    }
 
-    submitBtn.textContent = 'Vérification...';
-    submitBtn.disabled = true;
+        if (companions > 0) {
+            const companionResult = getCompanionDetails(companions);
+            if (companionResult.error) {
+                registrationFormError.textContent = companionResult.error;
+                submitBtn.disabled = false;
+                return;
+            }
+            formData.set('companions_details', JSON.stringify(companionResult.details));
+        } else {
+            formData.set('companions_details', JSON.stringify([]));
+        }
 
-    const checkParams = new URLSearchParams();
-    for (const [key, value] of formData.entries()) {
-        checkParams.append(key, value);
-    }
-    checkParams.set('action', 'check');
+        submitBtn.textContent = 'Vérification...';
+        submitBtn.disabled = true;
 
-    try {
-        const checkResponse = await fetch('/.netlify/functions/inscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            body: checkParams.toString()
-        });
+        const checkParams = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            checkParams.append(key, value);
+        }
+        checkParams.set('action', 'check');
 
-        const checkData = await checkResponse.json();
+        let checkResponse;
+        try {
+            checkResponse = await fetch(functionPath, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: checkParams.toString()
+            });
+        } catch (error) {
+            console.error('Échec de la vérification du service:', error);
+            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
+            registrationForm.submit();
+            return;
+        }
+
+        if (!checkResponse.ok && checkResponse.status !== 409) {
+            console.error('Vérification du service non disponible:', checkResponse.status);
+            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
+            registrationForm.submit();
+            return;
+        }
+
+        let checkData;
+        try {
+            checkData = await checkResponse.json();
+        } catch (error) {
+            console.error('Réponse JSON invalide pour la vérification:', error);
+            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
+            registrationForm.submit();
+            return;
+        }
 
         if (checkData.duplicate) {
             if (checkData.sameSalon) {
@@ -406,14 +431,34 @@ registrationForm.addEventListener('submit', async (e) => {
         formData.set('action', 'register');
         submitBtn.textContent = 'Envoi de l\'inscription...';
 
-        const registerResponse = await fetch('/.netlify/functions/inscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            body: new URLSearchParams(formData).toString()
-        });
+        let registerResponse;
+        try {
+            registerResponse = await fetch(functionPath, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: new URLSearchParams(formData).toString()
+            });
+        } catch (error) {
+            console.error('Échec de l\'envoi du service:', error);
+            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
+            registrationForm.submit();
+            return;
+        }
 
         if (registerResponse.status === 303) {
             window.location.href = '/merci-inscription.html';
+            return;
+        }
+
+        if (!registerResponse.ok) {
+            if (registerResponse.status === 400 || registerResponse.status === 409) {
+                const registerData = await registerResponse.json();
+                registrationFormError.textContent = registerData.message || 'Une erreur est survenue lors de l\'inscription.';
+                return;
+            }
+            console.error('Réponse inattendue du service:', registerResponse.status);
+            registrationFormError.textContent = 'Service temporairement indisponible. Envoi direct du formulaire...';
+            registrationForm.submit();
             return;
         }
 
