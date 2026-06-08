@@ -12,7 +12,11 @@ if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
   );
 }
 
-const localRegistrationsPath = path.resolve(__dirname, '..', 'data', 'registrations.json');
+const localRegistrationsPaths = [
+  path.resolve(process.cwd(), 'data', 'registrations.json'),
+  path.resolve(__dirname, '..', '..', 'data', 'registrations.json'),
+  path.resolve(__dirname, '..', 'data', 'registrations.json')
+];
 
 const normalizeValue = (value) => {
   if (!value) return '';
@@ -20,24 +24,37 @@ const normalizeValue = (value) => {
 };
 
 const loadLocalRegistrations = () => {
-  try {
-    if (!fs.existsSync(localRegistrationsPath)) {
-      return [];
+  let lastError = null;
+
+  for (const filePath of localRegistrationsPaths) {
+    try {
+      if (!fs.existsSync(filePath)) {
+        continue;
+      }
+
+      const content = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(content) || [];
+    } catch (error) {
+      lastError = error;
     }
-    const content = fs.readFileSync(localRegistrationsPath, 'utf8');
-    return JSON.parse(content) || [];
-  } catch (error) {
-    console.error('Erreur lecture inscriptions locales :', error);
-    return [];
   }
+
+  if (lastError) {
+    console.error('Erreur lecture inscriptions locales :', lastError);
+  }
+
+  return [];
 };
 
 const saveLocalRegistrations = (registrations) => {
+  const targetPath = localRegistrationsPaths[0];
+
   try {
-    fs.mkdirSync(path.dirname(localRegistrationsPath), { recursive: true });
-    fs.writeFileSync(localRegistrationsPath, JSON.stringify(registrations, null, 2), 'utf8');
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.writeFileSync(targetPath, JSON.stringify(registrations, null, 2), 'utf8');
   } catch (error) {
     console.error('Erreur écriture inscriptions locales :', error);
+    throw error;
   }
 };
 
