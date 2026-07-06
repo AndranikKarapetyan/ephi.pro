@@ -185,6 +185,18 @@ function rememberLocalRegistration(email, eventDate, eventLocation) {
     }
 }
 
+async function submitToNetlifyForms(formData) {
+    try {
+        await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: new URLSearchParams(formData).toString()
+        });
+    } catch (error) {
+        console.error('Erreur envoi Netlify Forms:', error);
+    }
+}
+
 function submitFormNatively(formData, submitBtn) {
     const userEmail = formData.get('user_email')?.toString().trim() || '';
     const eventDate = formData.get('event_date')?.toString().trim() || '';
@@ -527,6 +539,7 @@ registrationForm.addEventListener('submit', async (e) => {
         const registerData = await registerResponse.json();
         if (registerData.success) {
             rememberLocalRegistration(userEmail, eventDate, eventLocation);
+            await submitToNetlifyForms(formData);
             window.location.href = registerData.redirect || '/merci-inscription.html';
             return;
         }
