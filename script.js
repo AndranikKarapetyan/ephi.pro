@@ -203,6 +203,13 @@ function submitFormNatively(formData, submitBtn) {
     const eventLocation = formData.get('event_location')?.toString().trim() || '';
     rememberLocalRegistration(userEmail, eventDate, eventLocation);
 
+    // formData ici est une copie en mémoire : il faut recopier companions_details
+    // dans le vrai champ du DOM, sinon le submit natif l'envoie vide.
+    const companionsDetailsInput = registrationForm.querySelector('[name="companions_details"]');
+    if (companionsDetailsInput) {
+        companionsDetailsInput.value = formData.get('companions_details')?.toString() || '[]';
+    }
+
     nativeSubmitInProgress = true;
     submitBtn.textContent = 'Envoi en cours...';
     submitBtn.disabled = true;
