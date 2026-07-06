@@ -142,13 +142,12 @@ exports.handler = async (event, context) => {
     const phone = formData.phone?.trim() || '';
     const lunch = formData.lunch?.trim() || '';
     const companions = Number(formData.companions || '0');
-    let companionsDetails = [];
+    const companionsDetails = [];
 
-    if (formData.companions_details) {
-      try {
-        companionsDetails = JSON.parse(formData.companions_details);
-      } catch (parseError) {
-        console.error('Impossible de parser companions_details', parseError);
+    for (let i = 1; i <= companions; i += 1) {
+      const fullName = (formData[`accompagnant_${i}`] || '').trim();
+      if (fullName) {
+        companionsDetails.push({ full_name: fullName });
       }
     }
 
@@ -276,7 +275,7 @@ exports.handler = async (event, context) => {
     await saveRegistrationRecord(registrationRecord);
 
     const companionsListHTML = companionsDetails.length > 0
-      ? `<div class='field'><div class='field-label'>Détails des accompagnants :</div><div class='field-value'><ul style="margin:0;padding-left:1.2rem;">${companionsDetails.map((person) => `<li>${person.first_name} ${person.last_name}</li>`).join('')}</ul></div></div>`
+      ? `<div class='field'><div class='field-label'>Détails des accompagnants :</div><div class='field-value'><ul style="margin:0;padding-left:1.2rem;">${companionsDetails.map((person) => `<li>${person.full_name}</li>`).join('')}</ul></div></div>`
       : '';
 
     const emailHTML = `

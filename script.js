@@ -203,13 +203,6 @@ function submitFormNatively(formData, submitBtn) {
     const eventLocation = formData.get('event_location')?.toString().trim() || '';
     rememberLocalRegistration(userEmail, eventDate, eventLocation);
 
-    // formData ici est une copie en mémoire : il faut recopier companions_details
-    // dans le vrai champ du DOM, sinon le submit natif l'envoie vide.
-    const companionsDetailsInput = registrationForm.querySelector('[name="companions_details"]');
-    if (companionsDetailsInput) {
-        companionsDetailsInput.value = formData.get('companions_details')?.toString() || '[]';
-    }
-
     nativeSubmitInProgress = true;
     submitBtn.textContent = 'Envoi en cours...';
     submitBtn.disabled = true;
@@ -224,10 +217,7 @@ function renderCompanionFields(count) {
         companionGroup.className = 'form-group';
         companionGroup.innerHTML = `
             <label class="form-label">Accompagnant ${i}</label>
-            <div class="companion-row">
-                <input type="text" name="companion_first_name_${i}" placeholder="Prénom accompagnant ${i} *" required>
-                <input type="text" name="companion_last_name_${i}" placeholder="Nom accompagnant ${i} *" required>
-            </div>
+            <input type="text" name="accompagnant_${i}" placeholder="Nom et prénom de l'accompagnant ${i} *" required>
         `;
         companionsDetailsContainer.appendChild(companionGroup);
     }
@@ -237,14 +227,13 @@ function getCompanionDetails(count) {
     const details = [];
 
     for (let i = 1; i <= count; i++) {
-        const firstName = registrationForm.querySelector(`[name="companion_first_name_${i}"]`).value.trim();
-        const lastName = registrationForm.querySelector(`[name="companion_last_name_${i}"]`).value.trim();
+        const fullName = registrationForm.querySelector(`[name="accompagnant_${i}"]`).value.trim();
 
-        if (!firstName || !lastName) {
-            return { error: `Veuillez renseigner le prénom et le nom de l'accompagnant ${i}.` };
+        if (!fullName) {
+            return { error: `Veuillez renseigner le nom et prénom de l'accompagnant ${i}.` };
         }
 
-        details.push({ first_name: firstName, last_name: lastName });
+        details.push({ full_name: fullName });
     }
 
     return { details };
@@ -435,9 +424,6 @@ registrationForm.addEventListener('submit', async (e) => {
                 submitBtn.disabled = false;
                 return;
             }
-            formData.set('companions_details', JSON.stringify(companionResult.details));
-        } else {
-            formData.set('companions_details', JSON.stringify([]));
         }
 
         submitBtn.textContent = 'Vérification...';
