@@ -23,6 +23,26 @@ const normalizeValue = (value) => {
   return value.toString().trim().toLowerCase().replace(/\s+/g, ' ');
 };
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_FILL_TIME_MS = 1500;
+
+// Rejette les requêtes qui ne proviennent pas d'une page du site (bots postant
+// directement sur l'endpoint sans jamais charger le formulaire).
+const isRequestFromSameSite = (event) => {
+  const host = (event.headers.host || event.headers['x-forwarded-host'] || '').toLowerCase();
+  const origin = event.headers.origin || event.headers.referer || event.headers.referrer;
+
+  if (!host || !origin) {
+    return false;
+  }
+
+  try {
+    return new URL(origin).host.toLowerCase() === host;
+  } catch (error) {
+    return false;
+  }
+};
+
 const loadLocalRegistrations = () => {
   let lastError = null;
 
@@ -119,6 +139,13 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    if (!isRequestFromSameSite(event)) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: 'Requête refusée' })
+      };
+    }
+
     const params = new URLSearchParams(event.body);
     const formData = {};
     for (const [key, value] of params) {
@@ -126,6 +153,15 @@ exports.handler = async (event, context) => {
     }
 
     if (formData['bot-field']) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Spam détecté' })
+      };
+    }
+
+    const formLoadedAt = Number(formData.form_loaded_at);
+    const fillTime = Date.now() - formLoadedAt;
+    if (!formLoadedAt || Number.isNaN(fillTime) || fillTime < MIN_FILL_TIME_MS) {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'Spam détecté' })
@@ -155,6 +191,20 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'Les champs date, lieu, nom et email sont obligatoires.' })
+      };
+    }
+
+    if (!EMAIL_PATTERN.test(userEmail)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Adresse email invalide.' })
+      };
+    }
+
+    if (action !== 'check' && action !== 'register') {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Action invalide.' })
       };
     }
 

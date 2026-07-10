@@ -264,6 +264,7 @@ function openRegistrationModal(date, location, time = '9h - 15h', invitationImag
     // Remplir les champs cachés
     document.getElementById('event_date').value = date;
     document.getElementById('event_location').value = location;
+    document.getElementById('form_loaded_at').value = Date.now().toString();
     
     // Afficher l'information de l'événement dans le modal
     document.querySelector('.modal-event-info').textContent = `📅 ${date} • ⏰ ${time} • 📍 ${location}`;
