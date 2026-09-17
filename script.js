@@ -254,8 +254,7 @@ const salonMap = {
     'lens-25juin': { date: '25 juin 2026', time: '9h - 15h', location: 'Lens - Stade Bollaert-Delelis (62)', invitation: 'images/Invitation%20Ephi%202026%20LENS%20(62).jpg' },
     'lyon-8septembre': { date: '8 septembre 2026', time: '9h - 15h', location: 'Lyon (69)', invitation: 'images/Invitation%20Salon%20EPHI%20-%202026%20-%20Lyon.jpg', externalUrl: 'https://forms.cloud.microsoft/e/peftu5YB27' },
     'aixenprovence-10septembre': { date: '10 septembre 2026', time: '9h - 15h', location: 'Aix-en-Provence (13)', invitation: 'images/Invitation Ephi 2026 AIX .jpg' },
-    'metz-15octobre': { date: '15 octobre 2026', time: '9h - 15h', location: 'Metz (57)' },
-    'toulouse-19novembre': { date: '19 novembre 2026', time: '9h - 15h', location: 'Toulouse (31)', invitation: 'images/Invitation%20Ephi%202026%20Toulouse.jpg' },
+    'toulouse-9decembre': { date: '9 décembre 2026', time: '9h - 15h', location: 'Toulouse (31)', invitation: 'images/Invitation%20Ephi%202026%20Toulouse.jpg' },
     'saintmaximin-3decembre': { date: '3 décembre 2026', time: '9h - 15h', location: 'Saint-Maximin (60)' }
 };
 
