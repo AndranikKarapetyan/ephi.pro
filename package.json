@@ -8,5 +8,8 @@
   },
   "scripts": {
     "build": "echo 'Build complete'"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
