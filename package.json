@@ -1,12 +1,15 @@
 {
   "name": "ephi-2026",
   "version": "1.0.0",
-  "description": "Site EPHI 2026 avec formulaires Netlify",
+  "description": "Site EPHI 2026",
   "dependencies": {
     "nodemailer": "^6.9.0",
     "@supabase/supabase-js": "^2.39.0"
   },
   "scripts": {
     "build": "echo 'Build complete'"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }

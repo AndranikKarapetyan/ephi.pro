@@ -460,8 +460,7 @@
                 la logistique, et les options de visibilité.
             </p>
             <div class="contact-form-wrapper">
-                <form class="contact-form" id="contactForm" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/merci-contact.html">
-                    <input type="hidden" name="form-name" value="contact">
+                <form class="contact-form" id="contactForm" name="contact" method="POST" action="/api/contact">
                     <p style="display:none;">
                         <label>Ne pas remplir si vous êtes humain: <input name="bot-field" /></label>
                     </p>
@@ -526,8 +525,7 @@
                 <img src="images/Invitation Ephi 2026 St Jean De Luz (1)_page-0001.jpg" alt="Invitation Salon EPHI 2026 - Saint Jean de Luz" class="modal-invitation-img">
             </div>
             
-            <form class="registration-form" id="registrationForm" name="inscription-salon" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/merci-inscription.html">
-                <input type="hidden" name="form-name" value="inscription-salon">
+            <form class="registration-form" id="registrationForm" name="inscription-salon" method="POST" action="/api/inscription">
                 <p style="display:none;">
                     <label>Ne pas remplir si vous êtes humain: <input name="bot-field" /></label>
                 </p>
@@ -564,15 +562,6 @@
                     </select>
                 </div>
                 <div id="companionsDetails"></div>
-                <!-- Champs cachés uniquement pour que Netlify détecte ces noms de champs
-                     au moment du build (ils sont générés dynamiquement en JS sinon,
-                     et Netlify ne "voit" pas le DOM au runtime). "disabled" = jamais
-                     soumis (évite le doublon avec le vrai champ créé en JS). Ne pas supprimer. -->
-                <div style="display:none;" aria-hidden="true">
-                    <input type="text" name="accompagnant_1" disabled>
-                    <input type="text" name="accompagnant_2" disabled>
-                    <input type="text" name="accompagnant_3" disabled>
-                </div>
                 <div class="form-error" id="registrationFormError" aria-live="polite"></div>
                 <div class="form-group">
                     <label class="form-label">Déjeuner sur place</label>

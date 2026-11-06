@@ -450,7 +450,7 @@
             credentials = btoa(`${username}:${password}`);
             
             try {
-                const response = await fetch('/.netlify/functions/admin-data', {
+                const response = await fetch('/api/admin-data', {
                     headers: {
                         'Authorization': `Basic ${credentials}`
                     }
@@ -475,7 +475,7 @@
         // Load data
         async function loadData() {
             try {
-                const response = await fetch('/.netlify/functions/admin-data', {
+                const response = await fetch('/api/admin-data', {
                     headers: {
                         'Authorization': `Basic ${credentials}`
                     }

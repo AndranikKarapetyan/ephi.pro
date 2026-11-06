@@ -614,7 +614,7 @@
           throw new Error('token manquant dans le lien');
         }
 
-        const response = await fetch(`/.netlify/functions/idf-nord-attendance?token=${encodeURIComponent(token)}`);
+        const response = await fetch(`/api/idf-nord-attendance?token=${encodeURIComponent(token)}`);
         const payload = await response.json();
 
         if (!response.ok) {

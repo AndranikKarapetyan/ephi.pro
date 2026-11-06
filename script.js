@@ -67,13 +67,11 @@ window.addEventListener('scroll', () => {
 const contactForm = document.getElementById('contactForm');
 
 contactForm.addEventListener('submit', async (e) => {
-    // Pour Netlify Forms, on laisse la soumission native se faire
-    // Le formulaire redirigera automatiquement vers la page de remerciement
+    // Soumission native vers /api/contact (redirige vers la page de remerciement)
     const submitBtn = contactForm.querySelector('button[type="submit"]');
     submitBtn.textContent = 'Envoi en cours...';
     submitBtn.disabled = true;
     
-    // Pas de preventDefault() - laisse Netlify gérer la soumission naturellement
 });
 
 // Intersection Observer for fade-in animations
@@ -156,7 +154,7 @@ const registerButtons = document.querySelectorAll('.btn-register');
 const companionsSelect = document.getElementById('companions');
 const companionsDetailsContainer = document.getElementById('companionsDetails');
 const registrationFormError = document.getElementById('registrationFormError');
-const functionPath = '/.netlify/functions/inscription';
+const functionPath = '/api/inscription';
 let nativeSubmitInProgress = false;
 
 function normalizeRegistrationValue(value) {
@@ -185,28 +183,10 @@ function rememberLocalRegistration(email, eventDate, eventLocation) {
     }
 }
 
-async function submitToNetlifyForms(formData) {
-    try {
-        await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            body: new URLSearchParams(formData).toString()
-        });
-    } catch (error) {
-        console.error('Erreur envoi Netlify Forms:', error);
-    }
-}
-
 function submitFormNatively(formData, submitBtn) {
-    const userEmail = formData.get('user_email')?.toString().trim() || '';
-    const eventDate = formData.get('event_date')?.toString().trim() || '';
-    const eventLocation = formData.get('event_location')?.toString().trim() || '';
-    rememberLocalRegistration(userEmail, eventDate, eventLocation);
-
-    nativeSubmitInProgress = true;
-    submitBtn.textContent = 'Envoi en cours...';
-    submitBtn.disabled = true;
-    registrationForm.submit();
+    registrationFormError.textContent = 'Service d\'inscription indisponible. Veuillez réessayer dans quelques instants ou nous contacter.';
+    submitBtn.textContent = 'Confirmer l\'inscription';
+    submitBtn.disabled = false;
 }
 
 function renderCompanionFields(count) {
@@ -532,7 +512,6 @@ registrationForm.addEventListener('submit', async (e) => {
         const registerData = await registerResponse.json();
         if (registerData.success) {
             rememberLocalRegistration(userEmail, eventDate, eventLocation);
-            await submitToNetlifyForms(formData);
             window.location.href = registerData.redirect || '/merci-inscription.html';
             return;
         }
