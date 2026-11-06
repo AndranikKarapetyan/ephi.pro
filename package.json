@@ -10,6 +10,6 @@
     "build": "echo 'Build complete'"
   },
   "engines": {
-    "node": "20.x"
+    "node": "26.x"
   }
 }
