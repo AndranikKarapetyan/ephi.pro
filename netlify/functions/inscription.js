@@ -119,7 +119,16 @@ const saveRegistrationRecord = async (registration) => {
 
   const registrations = loadLocalRegistrations();
   registrations.push(registration);
-  saveLocalRegistrations(registrations);
+  try {
+    saveLocalRegistrations(registrations);
+  } catch (error) {
+    // Système de fichiers en lecture seule (Vercel) : sans Supabase, on ne
+    // garde la trace que par email. Sans SMTP, l'inscription serait perdue.
+    if (!(process.env.SMTP_USER && process.env.SMTP_PASS)) {
+      throw error;
+    }
+    console.warn('Inscription non stockée (pas de Supabase) : notification email uniquement.');
+  }
 };
 
 const findMatchingRegistrations = (registrations, normalizedEmail) => {
