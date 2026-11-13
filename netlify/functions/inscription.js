@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const nodemailer = require('nodemailer');
+const { sendMail, isMailConfigured, notificationEmail } = require('../../lib/mailer');
 const { createClient } = require('@supabase/supabase-js');
 
 // Initialiser Supabase (si configuré)
@@ -123,8 +123,8 @@ const saveRegistrationRecord = async (registration) => {
     saveLocalRegistrations(registrations);
   } catch (error) {
     // Système de fichiers en lecture seule (Vercel) : sans Supabase, on ne
-    // garde la trace que par email. Sans SMTP, l'inscription serait perdue.
-    if (!(process.env.SMTP_USER && process.env.SMTP_PASS)) {
+    // garde la trace que par email. Sans email, l'inscription serait perdue.
+    if (!isMailConfigured()) {
       throw error;
     }
     console.warn('Inscription non stockée (pas de Supabase) : notification email uniquement.');
@@ -514,33 +514,19 @@ exports.handler = async (event, context) => {
 </html>
     `;
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-
-    const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS;
-    if (!smtpConfigured) {
-      console.warn('SMTP non configuré : les emails ne seront pas envoyés.');
-    }
-
-    if (smtpConfigured) {
+    if (!isMailConfigured()) {
+      console.warn('RESEND_API_KEY non configurée : les emails ne seront pas envoyés.');
+    } else {
       try {
-        await transporter.sendMail({
-          from: '"EPHI 2026" <noreply@ephi.pro>',
-          to: process.env.NOTIFICATION_EMAIL || 'info@maxiavenue.com',
+        await sendMail({
+          to: notificationEmail(),
+          replyTo: userEmail || undefined,
           subject: `Nouvelle inscription EPHI 2026 - ${eventDate} - ${companyName}`,
           html: emailHTML
         });
 
         if (userEmail) {
-          await transporter.sendMail({
-            from: '"EPHI 2026" <noreply@ephi.pro>',
+          await sendMail({
             to: userEmail,
             subject: `Confirmation d'inscription - EPHI 2026 - ${eventDate}`,
             html: confirmationHTML

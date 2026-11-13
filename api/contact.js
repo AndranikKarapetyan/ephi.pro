@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const { sendMail, isMailConfigured, notificationEmail } = require('../lib/mailer');
 const wrap = require('./_adapter');
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,31 +44,28 @@ const handler = async (event) => {
     return json(400, 'Champs invalides ou manquants');
   }
 
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.error('SMTP non configuré');
+  if (!isMailConfigured()) {
+    console.error('RESEND_API_KEY non configurée');
     return json(500, 'Service indisponible');
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-  });
-
-  await transporter.sendMail({
-    from: `"${process.env.FROM_NAME || 'EPHI 2026'}" <${process.env.SMTP_USER}>`,
-    to: process.env.NOTIFICATION_EMAIL || 'info@maxiavenue.com',
-    replyTo: email,
-    subject: `Contact EPHI 2026 - ${company}`,
-    html: `
-      <h2>Nouveau message de contact</h2>
-      <p><strong>Entreprise :</strong> ${escapeHtml(company)}</p>
-      <p><strong>Nom :</strong> ${escapeHtml(name)}</p>
-      <p><strong>Email :</strong> ${escapeHtml(email)}</p>
-      <p><strong>Téléphone :</strong> ${escapeHtml(phone)}</p>
-      <p><strong>Message :</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`
-  });
+  try {
+    await sendMail({
+      to: notificationEmail(),
+      replyTo: email,
+      subject: `Contact EPHI 2026 - ${company}`,
+      html: `
+        <h2>Nouveau message de contact</h2>
+        <p><strong>Entreprise :</strong> ${escapeHtml(company)}</p>
+        <p><strong>Nom :</strong> ${escapeHtml(name)}</p>
+        <p><strong>Email :</strong> ${escapeHtml(email)}</p>
+        <p><strong>Téléphone :</strong> ${escapeHtml(phone)}</p>
+        <p><strong>Message :</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`
+    });
+  } catch (error) {
+    console.error('Erreur envoi email contact :', error);
+    return json(502, "L'envoi du message a échoué, veuillez réessayer.");
+  }
 
   return redirect('/merci-contact.html');
 };
